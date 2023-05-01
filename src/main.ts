@@ -1,24 +1,19 @@
-import { createEffect, createSignal } from "solid-js";
-import { Factor } from "./Wrangler/Factor";
-import { ReactivePartition } from "./Wrangler/ReactivePartition";
-import { Wrangler } from "./Wrangler/Wrangler";
+import { Accessor, createRoot } from "solid-js";
 import { loadJSON } from "./funs";
+import { Plot } from "./structures/Plot";
+import { Scene } from "./structures/Scene";
+import "./styles.css";
+import { HistoPlot } from "./wrappers/HistoPlot";
+import { Factor } from "./wrangler/Factor";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const dataMtcars = await loadJSON("mtcars.json");
+const dataMpg = await loadJSON("mpg.json");
 
-const sumReducer = {
-  reducefn: (x: number, y: number) => x + y,
-  initialValue: 0,
-};
-
-const wrangler1 = new Wrangler()
-  .bindData(dataMtcars, { v1: "mpg", v2: "am" })
-  .bind("width", () => 5)
-  .bind("f1", ({ v1, width }) => Factor.bin(v1(), width()))
-  .bind("f2", ({ v2 }) => Factor.from(v2()))
-  .partitionBy("f1", "f2")
-  .addReducer("sum", "v1", sumReducer);
-
-createEffect(() => console.log(wrangler1.partition?.labels()));
-wrangler1.setters.setWidth(3);
+createRoot(() => {
+  const scene1 = new Scene(app, dataMpg);
+  const plot1 = new HistoPlot(scene1, { v1: "hwy" });
+  const plot2 = new HistoPlot(scene1, { v1: "displ" });
+  const plot3 = new Plot(scene1);
+  const plot4 = new Plot(scene1);
+});

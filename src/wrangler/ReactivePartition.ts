@@ -1,13 +1,15 @@
 import { Accessor } from "solid-js";
-import { intToChar } from "../funs";
 import { Reducer } from "../types";
 import { Factor } from "./Factor";
 
 export class ReactivePartition {
-  parent?: ReactivePartition;
   depth: number;
+  parent?: ReactivePartition;
+  child?: ReactivePartition;
+
   factor: Accessor<Factor>;
   reducables: Record<string, { array: any[] } & Reducer<any, any>>;
+  statics: Record<string, any>;
 
   constructor(factor: Accessor<Factor>, parent?: ReactivePartition) {
     this.parent = parent;
@@ -15,13 +17,12 @@ export class ReactivePartition {
     this.factor = factor;
 
     this.reducables = parent?.reducables ?? {};
+    this.statics = parent?.statics ?? {};
   }
 
   nest = (factor: Accessor<Factor>) => {
-    return new ReactivePartition(
-      () => Factor.product(this.factor(), factor()),
-      this
-    );
+    const productFactor = () => Factor.product(this.factor(), factor());
+    return new ReactivePartition(productFactor, this);
   };
 
   addReducer = <T, U>(key: string, array: T[], reducer: Reducer<T, U>) => {
@@ -30,73 +31,74 @@ export class ReactivePartition {
     return this;
   };
 
+  addStatic = (key: string, value: any) => {
+    this.statics[key] = value;
+    return this;
+  };
+
   labels = () => {
-    const [staticLabels, computedLabels] = [
+    const [staticLabels, computedLabels, parentLabels, parentIndexMap] = [
       this.staticLabels(),
       this.computedLabels(),
+      this.parent?.labels(),
+      this.parentIndexMap(),
     ];
-    const [parentLabels, childParentMap] = this.parent
-      ? [this.parent.labels(), this.childParentMap()]
-      : [undefined, undefined];
 
-    const keys = Object.keys(staticLabels);
-    const result = {} as Record<string, any>;
+    const { statics } = this;
+    const keys = Object.keys(computedLabels);
+    const result = {} as Record<string, any>[][];
 
     for (let i = 0; i < keys.length; i++) {
-      const key = keys[i] as unknown as number;
-      const parentKey = childParentMap?.[key] ?? "";
+      const key = parseInt(keys[i], 10);
 
-      result[key] = Object.assign(
+      const labelSet = Object.assign(
         {},
-        parentLabels?.[parentKey] ?? {},
+        statics,
         staticLabels[key],
         computedLabels[key]
       );
+
+      const parentLabelSet = parentLabels?.[parentIndexMap?.[key] ?? 0] ?? [];
+      result[key] = [...parentLabelSet, labelSet];
     }
 
     return result;
   };
 
-  childParentMap = () => {
-    const [factor, parentFactor] = [this.factor(), this.parent!.factor()];
+  parentIndexMap = () => {
+    if (!this.parent) return;
+    const [factor, parentFactor] = [this.factor(), this.parent?.factor()];
     const result = {} as Record<number, number>;
     for (let i = 0; i < factor.indices.length; i++) {
       if (!(factor.indices[i] in result)) {
         result[factor.indices[i]] = parentFactor.indices[i];
       }
     }
-  };
-
-  staticLabels = () => {
-    const factor = this.factor();
-    const result = {} as Record<string, any>;
-    // Disgusting thing just to prepend depth before label keys
-    for (const [key1, value1] of Object.entries(factor.labels)) {
-      result[key1 as unknown as number] = {} as Record<string, any>;
-      for (const [key2, value2] of Object.entries(value1)) {
-        result[key1 as unknown as number][`${intToChar(this.depth)}_${key2}`] =
-          value2;
-      }
-    }
     return result;
   };
 
+  staticLabels = () => this.factor().labels;
   computedLabels = () => {
     const { reducables } = this;
-    const { indexSet, indices } = this.factor();
+    const { indexSet, indices, singleton } = this.factor();
     const keys = Object.keys(reducables);
 
     const result = {} as Record<number, any>;
     for (const index of indexSet) result[index] = {};
 
     for (let j = 0; j < keys.length; j++) {
-      const key = `${intToChar(this.depth)}_${keys[j]}`;
       const { array, reducefn, initialValue } = reducables[keys[j]];
+      const key = keys[j];
+
+      if (singleton) {
+        result[0][key] = array.reduce(reducefn);
+        continue;
+      }
 
       for (let i = 0; i < indices.length; i++) {
         const index = indices[i];
         if (!result?.[index]?.[key]) result[index][key] = initialValue;
-        result[index][key] = reducefn(result[index][key], array[i]);
+        result[index][key] = reducefn(result[index][key], array?.[i]);
       }
     }
 
