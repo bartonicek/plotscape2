@@ -1,6 +1,7 @@
 import { Accessor } from "solid-js";
 import { Reducer } from "../types";
 import { Factor } from "./Factor";
+import { Wrangler } from "./Wrangler";
 
 export class ReactivePartition {
   depth: number;
@@ -8,32 +9,30 @@ export class ReactivePartition {
   child?: ReactivePartition;
 
   factor: Accessor<Factor>;
+  wrangler: Wrangler;
+
   reducables: Record<string, { array: any[] } & Reducer<any, any>>;
   statics: Record<string, any>;
+  encodefn: (label: Record<string, string>[]) => Record<string, string>;
 
-  constructor(factor: Accessor<Factor>, parent?: ReactivePartition) {
+  constructor(
+    wrangler: Wrangler,
+    factor: Accessor<Factor>,
+    parent?: ReactivePartition
+  ) {
+    this.wrangler = wrangler;
     this.parent = parent;
     this.depth = (parent?.depth ?? -1) + 1;
     this.factor = factor;
 
-    this.reducables = parent?.reducables ?? {};
-    this.statics = parent?.statics ?? {};
+    this.reducables = wrangler.reducables;
+    this.statics = wrangler.statics;
+    this.encodefn = wrangler.encodefn;
   }
 
   nest = (factor: Accessor<Factor>) => {
     const productFactor = () => Factor.product(this.factor(), factor());
-    return new ReactivePartition(productFactor, this);
-  };
-
-  addReducer = <T, U>(key: string, array: T[], reducer: Reducer<T, U>) => {
-    if (this.parent) this.parent.addReducer(key, array, reducer);
-    else this.reducables[key] = { array, ...reducer };
-    return this;
-  };
-
-  addStatic = (key: string, value: any) => {
-    this.statics[key] = value;
-    return this;
+    return new ReactivePartition(this.wrangler, productFactor, this);
   };
 
   labels = () => {

@@ -37,6 +37,7 @@ export const makeScales = (plot: Plot) => {
   const dataX = new ScaleContinuous()
     .setCodomain(just(0), innerWidth)
     .setExpand(just(0.1), just(0.1));
+
   const dataY = new ScaleContinuous()
     .setCodomain(just(0), innerHeight)
     .setExpand(just(0.1), just(0.1));

@@ -1,4 +1,4 @@
-import { Accessor } from "solid-js";
+import { Accessor, createMemo } from "solid-js";
 import { Scale } from "./Scale";
 import { Tuple2 } from "../types";
 import { call, just } from "../funs";
@@ -26,12 +26,12 @@ export class ScaleDiscrete implements Scale<string> {
   };
 
   setCodomain = (lower: Accessor<number>, upper: Accessor<number>) => {
-    this._codomain = [lower, upper];
+    this._codomain = [createMemo(lower), createMemo(upper)];
     return this;
   };
 
   setExpand = (lower: Accessor<number>, upper: Accessor<number>) => {
-    this._expand = [lower, upper];
+    this._expand = [createMemo(lower), createMemo(upper)];
     return this;
   };
 

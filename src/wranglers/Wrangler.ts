@@ -1,18 +1,34 @@
 import { Accessor, Setter, createMemo, createSignal } from "solid-js";
-import { capitalize, invertObject } from "../funs";
-import { ReactivePartition } from "./ReactivePartition";
 import { Reducer } from "../types";
 import { Factor } from "./Factor";
+import { Marker } from "./Marker";
+import { ReactivePartition } from "./ReactivePartition";
+import { identity, just } from "../funs";
 
 export class Wrangler {
   get: Record<string, Accessor<any>>;
   set: Record<string, Setter<any>>;
   partition: ReactivePartition;
 
+  partitions: ReactivePartition[];
+  outputs: Accessor<Record<string, any>[]>[];
+
+  reducables: Record<string, { array: any[] } & Reducer<any, any>>;
+  statics: Record<string, any>;
+  encodefn: (label: Record<string, string>[]) => Record<string, string>;
+
   constructor() {
     this.get = {};
     this.set = {};
-    this.partition = new ReactivePartition(() => Factor.singleton());
+
+    this.reducables = {};
+    this.statics = {};
+
+    this.partition = new ReactivePartition(this, just(Factor.singleton()));
+    this.partitions = [this.partition];
+    this.outputs = [this.partition.labels];
+
+    this.encodefn = identity;
   }
 
   bind = (key: string, bindfn: (values?: any) => any) => {
@@ -23,6 +39,11 @@ export class Wrangler {
       return this;
     }
     this.get[key] = createMemo(() => bindfn(this.get));
+    return this;
+  };
+
+  bindMarker = (marker: Marker) => {
+    this.get["marker"] = createMemo(marker.factor);
     return this;
   };
 
@@ -39,9 +60,13 @@ export class Wrangler {
   };
 
   partitionBy = (...keys: string[]) => {
-    this.partition = keys.reduce((result, nextKey) => {
-      return result.nest(this.get[nextKey]);
-    }, this.partition);
+    let partition = this.partition;
+    for (const key of keys) {
+      partition = partition.nest(this.get[key]);
+      this.partitions.push(partition);
+      this.outputs.push(partition.labels);
+    }
+    this.partition = partition;
     return this;
   };
 
@@ -50,12 +75,12 @@ export class Wrangler {
     arrayKey: string,
     reducer: Reducer<T, U>
   ) => {
-    this.partition?.addReducer(key, this.get[arrayKey](), reducer);
+    this.reducables[key] = { array: this.get[arrayKey](), ...reducer };
     return this;
   };
 
   addStatic = (key: string, value: any) => {
-    this.partition?.addStatic(key, value);
+    this.statics[key] = value;
     return this;
   };
 

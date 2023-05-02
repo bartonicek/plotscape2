@@ -23,16 +23,18 @@ export class Factor {
   static from = (values: string[], labels?: string[]) => {
     labels = labels ? labels : Array.from(new Set(values)).sort();
 
+    const labelObj = {} as Record<string, any>;
+    for (let i = 0; i < labels.length; i++)
+      labelObj[i] = { label: labels[i], cases: [] };
+
     const indices = Array(values.length);
     const indexSet = new Set<number>();
     for (let i = 0; i < values.length; i++) {
       const index = labels.indexOf(values[i]);
       indices[i] = index;
       indexSet.add(index);
+      labelObj[index].cases.push(i);
     }
-
-    const labelObj = {} as Record<string, any>;
-    for (let i = 0; i < labels.length; i++) labelObj[i] = { label: labels[i] };
 
     return new Factor(indices, indexSet, labelObj);
   };
@@ -54,17 +56,24 @@ export class Factor {
     const indices = Array(values.length);
     const indexSet = new Set<number>();
 
+    const labels = {} as Record<number, any>;
+
     for (let j = 0; j < values.length; j++) {
       const index = breaks.findIndex((br) => br >= values[j]) - 1;
       indices[j] = index;
       indexSet.add(index);
+      if (!labels[index]) labels[index] = {};
+      if (!labels[index].cases) labels[index].cases = [];
+      labels[index].cases.push(j);
     }
 
     const usedIndices = Array.from(indexSet).sort(diff);
-    const labels = {} as Record<number, any>;
     for (let k = 0; k < usedIndices.length; k++) {
       const [lwr, upr] = [usedIndices[k], usedIndices[k] + 1];
-      labels[usedIndices[k]] = { binMin: breaks[lwr], binMax: breaks[upr] };
+      Object.assign(labels[usedIndices[k]], {
+        binMin: breaks[lwr],
+        binMax: breaks[upr],
+      });
     }
 
     return new Factor(indices, indexSet, labels);
@@ -91,9 +100,11 @@ export class Factor {
           const nextFactorLabels = nextFactor.labels[factorIndices[k]];
           return Object.assign(result, appendToKeys(nextFactorLabels, k));
         }, {});
+        labels[combinedIndex].cases = [];
         indexSet.add(combinedIndex);
       }
 
+      labels[combinedIndex].cases.push(i);
       indices[i] = combinedIndex;
     }
 

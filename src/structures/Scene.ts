@@ -8,6 +8,7 @@ import {
   onKeyUp,
   onMousedown,
 } from "./globalEventHandlers";
+import { Marker } from "../wranglers/Marker";
 
 export class Scene {
   app: HTMLDivElement;
@@ -15,6 +16,7 @@ export class Scene {
   plots: Plot[];
 
   store: ReturnType<typeof makeGlobalStore>;
+  marker: Marker;
 
   keyActions: Record<string, () => void>;
 
@@ -26,6 +28,10 @@ export class Scene {
     this.store = makeGlobalStore();
 
     this.app.classList.add("plotscape-scene");
+
+    const n = this.data[Object.keys(this.data)[0]].length;
+    const { selectedCases, group } = this.store;
+    this.marker = new Marker(n, selectedCases, group);
 
     this.keyActions = {
       Digit1: () => this.store.setGroup(2),

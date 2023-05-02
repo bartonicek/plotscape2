@@ -1,4 +1,5 @@
-import { callWith, toInt } from "../funs";
+import { batch } from "solid-js";
+import { callWith, throttle, toInt } from "../funs";
 import { Plot } from "./Plot";
 
 export const onResize = (plot: Plot) => () => {
@@ -7,7 +8,7 @@ export const onResize = (plot: Plot) => () => {
   setHeight(toInt(getComputedStyle(plot.container)["height"]));
 };
 
-export const onMousedown = (plot: Plot) => (event: MouseEvent) => {
+export const onMousedownInner = (plot: Plot) => (event: MouseEvent) => {
   const {
     innerHeight,
     setHolding,
@@ -22,20 +23,24 @@ export const onMousedown = (plot: Plot) => (event: MouseEvent) => {
 
   const [x, y] = [event.offsetX, innerHeight() - event.offsetY];
   setHolding(true);
-  [setClickX, setMouseX].map(callWith(x));
-  [setClickY, setMouseY].map(callWith(y));
+  batch(() => {
+    setClickX(x), setClickY(y), setMouseX(x), setMouseY(y);
+  });
 };
 
 export const onMouseup = (plot: Plot) => () => plot.store.setHolding(false);
 
-export const onMousemove = (plot: Plot) => (event: MouseEvent) => {
+export const onMousemoveInner = (plot: Plot) => (event: MouseEvent) => {
   if (!plot.store.holding()) return;
 
   const { innerHeight } = plot.store;
   const { setMouseX, setMouseY } = plot.store;
 
   const [x, y] = [event.offsetX, innerHeight() - event.offsetY];
-  setMouseX(x), setMouseY(y);
+
+  batch(() => {
+    setMouseX(x), setMouseY(y);
+  });
 };
 
 export const onKeyDown = (plot: Plot) => (event: KeyboardEvent) => {

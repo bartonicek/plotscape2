@@ -5,7 +5,7 @@ import { Plot } from "./Plot";
 type GraphicLayerOptions = {
   name: string;
   inner: boolean;
-  scalingFactor: number;
+  scalingFactor?: number;
 };
 
 export class GraphicLayer {
@@ -16,10 +16,9 @@ export class GraphicLayer {
   context: CanvasRenderingContext2D;
 
   constructor(plot: Plot, options: GraphicLayerOptions) {
-    this.scalingFactor = options.scalingFactor ?? 3;
-
     const { store } = plot;
-    const { inner } = options;
+    const { inner, scalingFactor = 3 } = options;
+    this.scalingFactor = scalingFactor ?? 3;
     this.width = inner ? store.innerWidth : store.width;
     this.height = inner ? store.innerHeight : store.height;
 
@@ -35,11 +34,12 @@ export class GraphicLayer {
     plot.container.appendChild(canvas);
 
     createEffect(() => {
-      canvas.style.width = this.width() + `px`;
-      canvas.style.height = this.height() + `px`;
-      canvas.width = Math.ceil(this.width() * this.scalingFactor);
-      canvas.height = Math.ceil(this.height() * this.scalingFactor);
-      this.context.scale(this.scalingFactor, this.scalingFactor);
+      const [width, height] = [this.width(), this.height()];
+      canvas.style.width = width + `px`;
+      canvas.style.height = height + `px`;
+      canvas.width = Math.ceil(width * scalingFactor);
+      canvas.height = Math.ceil(height * scalingFactor);
+      this.context.scale(this.scalingFactor, scalingFactor);
     });
   }
 

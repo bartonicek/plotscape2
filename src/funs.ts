@@ -1,3 +1,6 @@
+import { Tuple2 } from "./types";
+
+export const identity = (x: any) => x;
 export const just = (x: any) => () => x;
 export const call = (fn: Function) => fn();
 export const callWith =
@@ -61,7 +64,7 @@ export const capitalize = (string: string) =>
 
 export const intToChar = (int: number) => String.fromCharCode(int + 97);
 
-export const throttle = (delay: number) => (fun: Function) => {
+export const throttle = (fun: Function, delay: number) => {
   let lastTime = 0;
   return (...args: any[]) => {
     const now = new Date().getTime();
@@ -70,3 +73,31 @@ export const throttle = (delay: number) => (fun: Function) => {
     fun(...args);
   };
 };
+
+export const rectOverlap = (
+  rect1x: Tuple2<number>,
+  rect1y: Tuple2<number>,
+  rect2x: Tuple2<number>,
+  rect2y: Tuple2<number>
+) => {
+  return !(
+    max(rect1x) < min(rect2x) || // If any holds, rectangles don't overlap
+    min(rect1x) > max(rect2x) ||
+    max(rect1y) < min(rect2y) ||
+    min(rect1y) > max(rect2y)
+  );
+};
+
+// export const rectOverlap = (
+//   rect1: [[number, number], [number, number]],
+//   rect2: [[number, number], [number, number]]
+// ) => {
+//   const [p1x, p1y] = [0, 1].map((e) => rect1.map((f) => f[e]));
+//   const [p2x, p2y] = [0, 1].map((e) => rect2.map((f) => f[e]));
+//   return !(
+//     max(p1x) < min(p2x) ||
+//     min(p1x) > max(p2x) ||
+//     max(p1y) < min(p2y) ||
+//     min(p1y) > max(p2y)
+//   );
+// };

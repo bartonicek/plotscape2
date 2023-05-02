@@ -1,4 +1,4 @@
-import { Accessor } from "solid-js";
+import { Accessor, createMemo } from "solid-js";
 import { Scale } from "./Scale";
 import { Tuple2 } from "../types";
 import { call, just } from "../funs";
@@ -17,7 +17,7 @@ export class ScaleContinuous implements Scale<number> {
   static of = () => new ScaleContinuous();
 
   setDomain = (lower: Accessor<number>, upper: Accessor<number>) => {
-    this._domain = [lower, upper];
+    this._domain = [createMemo(lower), createMemo(upper)];
     return this;
   };
 

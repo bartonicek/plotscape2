@@ -4,27 +4,34 @@ import { GraphicLayer } from "./GraphicLayer";
 import { Scene } from "./Scene";
 import { makeLayers } from "./makeLayers";
 import { makeLocalStore } from "./makeLocalStore";
-import { createEffect, onMount } from "solid-js";
+import { batch, createEffect, onMount } from "solid-js";
 import {
   onKeyDown,
-  onMousedown,
-  onMousemove,
+  onMousedownInner,
+  onMousemoveInner,
   onMouseup,
   onResize,
 } from "./localEventHandlers";
 import { makeScales } from "./makeScales";
-import { Wrangler } from "../wrangler/Wrangler";
+import { Wrangler } from "../wranglers/Wrangler";
+import { Marker } from "../wranglers/Marker";
+import { Rectangles } from "../representations.ts/Rectangles";
+import { Encoder } from "../wranglers/Encoder";
+import { throttle } from "../funs";
 
 export class Plot {
   data: Dataframe;
   scene: Scene;
   container: HTMLDivElement;
 
-  wrangler: Wrangler;
-
   layers: Record<string, GraphicLayer>;
   store: ReturnType<typeof makeLocalStore>;
   scales: ReturnType<typeof makeScales>;
+
+  wrangler: Wrangler;
+  encoder: Encoder;
+  marker: Marker;
+  representations: Rectangles[];
 
   keyActions: Record<string, () => void>;
 
@@ -35,18 +42,26 @@ export class Plot {
     this.container = html`<div class="plotscape-container" />`;
     scene.app.appendChild(this.container);
 
-    this.wrangler = new Wrangler();
-
     this.store = makeLocalStore(this);
     this.layers = makeLayers(this);
     this.scales = makeScales(this);
 
+    this.wrangler = new Wrangler();
+    this.encoder = new Encoder(this.wrangler.output);
+    this.marker = scene.marker;
+    this.representations = [];
+
+    const { canvas: topLayer } = this.layers.click;
+
     onMount(() => {
-      this.container.addEventListener("mousedown", onMousedown(this));
-      this.container.addEventListener("mousemove", onMousemove(this));
-      this.container.addEventListener("mouseup", onMouseup(this));
+      topLayer.addEventListener("mousedown", onMousedownInner(this));
+      topLayer.addEventListener(
+        "mousemove",
+        throttle(onMousemoveInner(this), 50)
+      );
+      topLayer.addEventListener("mouseup", onMouseup(this));
       window.addEventListener("resize", onResize(this));
-      window.addEventListener("keydown", onKeyDown(this));
+      window.addEventListener("keydown", throttle(onKeyDown(this), 50));
     });
 
     this.keyActions = {};
@@ -58,4 +73,12 @@ export class Plot {
 
   activate = () => this.store.activate();
   deactivate = () => this.store.deactivate();
+
+  addRepresentation = (representation: Rectangles) => {
+    this.representations.push(representation);
+    createEffect(() => {
+      representation.draw();
+      representation.updateSelection();
+    });
+  };
 }

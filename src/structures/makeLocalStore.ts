@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import { just, toInt } from "../funs";
 import { graphicParameters } from "../graphicParameters";
 import { Plot } from "./Plot";
@@ -37,6 +37,10 @@ export const makeLocalStore = (plot: Plot) => {
   const marginTop = just(marginLines[2] * fontsize);
   const marginRight = just(marginLines[3] * fontsize);
 
+  const innerClickX = () => {
+    return clickX() - marginLeft();
+  };
+
   const innerWidth = () => width() - marginLeft() - marginRight();
   const innerHeight = () => height() - marginBottom() - marginTop();
   const innerLeft = marginLeft;
@@ -63,6 +67,7 @@ export const makeLocalStore = (plot: Plot) => {
     marginLeft,
     marginTop,
     marginRight,
+    innerClickX,
     activate,
     deactivate,
     setWidth,
