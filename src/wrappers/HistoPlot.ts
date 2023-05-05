@@ -1,15 +1,16 @@
-import { just, max, min } from "../funs";
+import { max, min } from "../funs";
 import { Rectangles } from "../representations.ts/Rectangles";
 import { Plot } from "../structures/Plot";
 import { Scene } from "../structures/Scene";
 import { Factor } from "../wranglers/Factor";
-import { countReducer } from "../wranglers/reducers";
+import { Wrangler } from "../wranglers/Wrangler";
+import { countReducer, sumReducer } from "../wranglers/reducers";
 
 export class HistoPlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
     super(scene);
 
-    this.wrangler
+    this.wrangler = new Wrangler()
       .bindMarker(this.marker)
       .bindData(mapping, scene.data)
       .bind("widthX", () => 1)
@@ -22,23 +23,27 @@ export class HistoPlot extends Plot {
         Factor.bin(v1(), width(), anchor())
       )
       .partitionBy("bins", "marker")
-      .addReducer("count", "_ones_", countReducer)
-      .addStatic("empty", 0);
-
-    this.encoder.encode(
-      (label) => ({
+      .addReducer("count", "v1", countReducer)
+      .addStatic("empty", 0)
+      .encode((label) => ({
         x0: label[1].binMin,
         x1: label[1].binMax,
         y0: label[1].empty,
         y1: label[1].count,
-        cases: label[1].cases,
-      }),
-      { x0: true, x1: true, y0: true, y1: true }
-    );
+        height: label[2].count,
+        group: label[2].group,
+        cases: label[2].cases,
+      }))
+      .trackLimits({
+        xMin: [Math.min, (label) => label.x0, Infinity],
+        xMax: [Math.max, (label) => label.x1, -Infinity],
+        yMin: [Math.min, (label) => label.y0, Infinity],
+        yMax: [Math.max, (label) => label.y1, -Infinity],
+      });
 
-    const { x0, x1, y0, y1 } = this.encoder.limits;
-    this.scales.data.x.setDomain(x0.min, x1.max);
-    this.scales.data.y.setDomain(y0.min, y1.max);
+    const { limits } = this.wrangler;
+    this.scales.data.x.setDomain(limits.xMin, limits.xMax);
+    this.scales.data.y.setDomain(limits.yMin, limits.yMax);
 
     Object.assign(this.keyActions, {
       Equal: () => this.wrangler.set.widthX((width) => (width * 11) / 10),
