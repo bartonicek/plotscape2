@@ -4,7 +4,7 @@ import { GraphicLayer } from "./GraphicLayer";
 import { Scene } from "./Scene";
 import { makeLayers } from "./makeLayers";
 import { makeLocalStore } from "./makeLocalStore";
-import { batch, createEffect, onMount } from "solid-js";
+import { batch, createEffect, on, onMount } from "solid-js";
 import {
   onKeyDown,
   onMousedownInner,
@@ -29,7 +29,6 @@ export class Plot {
   scales: ReturnType<typeof makeScales>;
 
   wrangler: Wrangler;
-  encoder: Encoder;
   marker: Marker;
   representations: Rectangles[];
 
@@ -47,7 +46,6 @@ export class Plot {
     this.scales = makeScales(this);
 
     this.wrangler = new Wrangler();
-    this.encoder = new Encoder(this.wrangler.output);
     this.marker = scene.marker;
     this.representations = [];
 
@@ -76,9 +74,11 @@ export class Plot {
 
   addRepresentation = (representation: Rectangles) => {
     this.representations.push(representation);
-    createEffect(() => {
-      representation.draw();
-      representation.updateSelection();
-    });
+
+    const { clickX, clickY, mouseX, mouseY } = this.store;
+    const dragCoords = [clickX, clickY, mouseX, mouseY];
+
+    createEffect(representation.draw);
+    createEffect(on(dragCoords, representation.updateSelection));
   };
 }

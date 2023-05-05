@@ -39,6 +39,8 @@ export class Scene {
       Digit3: () => this.store.setGroup(4),
     };
 
+    // createEffect(() => console.log(this.store.selectedCases()));
+
     onMount(() => {
       this.app.addEventListener("mousedown", onMousedown(this));
       window.addEventListener("keydown", onKeyDown(this));

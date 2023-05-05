@@ -1,10 +1,18 @@
-import { appendToKeys, diff, sum } from "../funs";
+import {
+  appendToKeys,
+  diff,
+  disjointUnion,
+  mapObject,
+  prependToKeys,
+  sum,
+} from "../funs";
 
 export class Factor {
   singleton: boolean;
+
   indices: number[];
   indexSet: Set<number>;
-  labels: Record<number, any>;
+  labels: Record<number, Record<string, any>>;
 
   constructor(
     indices: number[],
@@ -18,7 +26,7 @@ export class Factor {
     this.singleton = singleton;
   }
 
-  static singleton = () => new Factor([], new Set([0]), {}, true);
+  static singleton = () => new Factor([], new Set([0]), { 0: {} }, true);
 
   static from = (values: string[], labels?: string[]) => {
     labels = labels ? labels : Array.from(new Set(values)).sort();
@@ -29,11 +37,12 @@ export class Factor {
 
     const indices = Array(values.length);
     const indexSet = new Set<number>();
+
     for (let i = 0; i < values.length; i++) {
       const index = labels.indexOf(values[i]);
       indices[i] = index;
-      indexSet.add(index);
       labelObj[index].cases.push(i);
+      indexSet.add(index);
     }
 
     return new Factor(indices, indexSet, labelObj);
@@ -62,8 +71,9 @@ export class Factor {
       const index = breaks.findIndex((br) => br >= values[j]) - 1;
       indices[j] = index;
       indexSet.add(index);
-      if (!labels[index]) labels[index] = {};
-      if (!labels[index].cases) labels[index].cases = [];
+      if (!labels[index]) {
+        labels[index] = { cases: [] };
+      }
       labels[index].cases.push(j);
     }
 
@@ -97,8 +107,9 @@ export class Factor {
 
       if (!indexSet.has(combinedIndex)) {
         labels[combinedIndex] = factors.reduce((result, nextFactor, k) => {
-          const nextFactorLabels = nextFactor.labels[factorIndices[k]];
-          return Object.assign(result, appendToKeys(nextFactorLabels, k));
+          const labelsCopy = { ...nextFactor.labels[factorIndices[k]] };
+          delete labelsCopy.cases;
+          return disjointUnion(result, labelsCopy);
         }, {});
         labels[combinedIndex].cases = [];
         indexSet.add(combinedIndex);

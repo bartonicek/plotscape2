@@ -22,13 +22,13 @@ export class Marker {
     this.indices = Array<number>(n).fill(1);
     this.indexSet = new Set([0, 1, 2, 3, 4]);
     this.labels = {
-      0: { marker: 0 },
-      1: { group: 1, persisent: false },
-      2: { group: 2, persistent: false },
-      3: { group: 3, persisent: false },
-      129: { group: 1, persistent: true },
-      130: { group: 2, persistent: true },
-      131: { group: 3, persistent: true },
+      0: { group: 0, persistent: false, cases: [] },
+      1: { group: 1, persisent: false, cases: [] },
+      2: { group: 2, persistent: false, cases: [] },
+      3: { group: 3, persisent: false, cases: [] },
+      129: { group: 1, persistent: true, cases: [] },
+      130: { group: 2, persistent: true, cases: [] },
+      131: { group: 3, persistent: true, cases: [] },
     };
 
     this.cases = cases;
@@ -40,8 +40,10 @@ export class Marker {
     const [cases, group] = [this.cases(), untrack(this.group)];
 
     if (group === 128) {
-      for (let i = 0; i < cases.length; i++)
-        indices[cases[i]] = indices[cases[i]] | 128;
+      for (let i = 0; i < cases.length; i++) {
+        const labelIndex = indices[cases[i]] | 128;
+        indices[cases[i]] = labelIndex;
+      }
     } else {
       for (let i = 0; i < cases.length; i++) {
         indices[cases[i]] = group;
@@ -50,16 +52,4 @@ export class Marker {
 
     return new Factor(indices, indexSet, labels);
   };
-
-  // clearTransient = () => {
-  //   const { indices } = this;
-  //   for (let i = 0; i < indices.length; i++) {
-  //     indices[i] = indices[i] & ~128;
-  //   }
-  // };
-
-  // clearAll = () => {
-  //   const { indices } = this;
-  //   indices.fill(1);
-  // };
 }

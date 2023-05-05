@@ -7,3 +7,8 @@ export const countReducer = {
   reducefn: (x: number) => x + 1,
   initialValue: 0,
 };
+
+export const productReducer = {
+  reducefn: (x: number, y: number) => x * y,
+  initialValue: 1,
+};

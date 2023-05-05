@@ -1,5 +1,5 @@
-import { Accessor } from "solid-js";
-import { Reducer } from "../types";
+import { Accessor, createMemo } from "solid-js";
+import { EncodeFn, Reducer } from "../types";
 import { Factor } from "./Factor";
 import { Wrangler } from "./Wrangler";
 
@@ -10,24 +10,26 @@ export class ReactivePartition {
 
   factor: Accessor<Factor>;
   wrangler: Wrangler;
+  encodefn: EncodeFn;
 
   reducables: Record<string, { array: any[] } & Reducer<any, any>>;
   statics: Record<string, any>;
-  encodefn: (label: Record<string, string>[]) => Record<string, string>;
 
   constructor(
     wrangler: Wrangler,
     factor: Accessor<Factor>,
     parent?: ReactivePartition
   ) {
-    this.wrangler = wrangler;
+    if (parent) parent.child = this;
     this.parent = parent;
     this.depth = (parent?.depth ?? -1) + 1;
+
+    this.wrangler = wrangler;
     this.factor = factor;
+    this.encodefn = wrangler.encodefn;
 
     this.reducables = wrangler.reducables;
     this.statics = wrangler.statics;
-    this.encodefn = wrangler.encodefn;
   }
 
   nest = (factor: Accessor<Factor>) => {
@@ -35,30 +37,33 @@ export class ReactivePartition {
     return new ReactivePartition(this.wrangler, productFactor, this);
   };
 
-  labels = () => {
+  encodings = () => {
     const [staticLabels, computedLabels, parentLabels, parentIndexMap] = [
       this.staticLabels(),
       this.computedLabels(),
-      this.parent?.labels(),
+      this.parent?.encodings(),
       this.parentIndexMap(),
     ];
 
-    const { statics } = this;
+    const { child, statics, encodefn } = this;
     const keys = Object.keys(computedLabels);
-    const result = {} as Record<string, any>[][];
+
+    const result = {} as Record<string, any>[][] | Record<string, any>[];
 
     for (let i = 0; i < keys.length; i++) {
       const key = parseInt(keys[i], 10);
-
-      const labelSet = Object.assign(
-        {},
-        statics,
-        staticLabels[key],
-        computedLabels[key]
-      );
+      const ownLabels = [statics, staticLabels[key], computedLabels[key]];
+      const ownLabelSet = Object.assign({}, ...ownLabels);
 
       const parentLabelSet = parentLabels?.[parentIndexMap?.[key] ?? 0] ?? [];
-      result[key] = [...parentLabelSet, labelSet];
+      const combinedLabelSet = [
+        ...(parentLabelSet as Record<string, any>[]),
+        ownLabelSet,
+      ];
+
+      // If leaf partition, encode labels into graphical encodings
+      if (!child) result[key] = encodefn(combinedLabelSet);
+      else result[key] = combinedLabelSet;
     }
 
     return result;
@@ -70,7 +75,7 @@ export class ReactivePartition {
     const result = {} as Record<number, number>;
     for (let i = 0; i < factor.indices.length; i++) {
       if (!(factor.indices[i] in result)) {
-        result[factor.indices[i]] = parentFactor.indices[i];
+        result[factor.indices[i]] = parentFactor.indices[i] ?? 0;
       }
     }
     return result;

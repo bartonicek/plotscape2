@@ -1,21 +1,20 @@
 import { Accessor, Setter, createMemo, createSignal } from "solid-js";
-import { Reducer } from "../types";
+import { EncodeFn, ReduceFn, Reducer } from "../types";
 import { Factor } from "./Factor";
 import { Marker } from "./Marker";
 import { ReactivePartition } from "./ReactivePartition";
-import { identity, just } from "../funs";
+import { identity, just, last, mapObject, rectOverlap } from "../funs";
 
 export class Wrangler {
   get: Record<string, Accessor<any>>;
   set: Record<string, Setter<any>>;
-  partition: ReactivePartition;
 
   partitions: ReactivePartition[];
-  outputs: Accessor<Record<string, any>[]>[];
+  encodefn: EncodeFn;
+  limits: Record<string, Accessor<number>>;
 
   reducables: Record<string, { array: any[] } & Reducer<any, any>>;
   statics: Record<string, any>;
-  encodefn: (label: Record<string, string>[]) => Record<string, string>;
 
   constructor() {
     this.get = {};
@@ -24,12 +23,37 @@ export class Wrangler {
     this.reducables = {};
     this.statics = {};
 
-    this.partition = new ReactivePartition(this, just(Factor.singleton()));
-    this.partitions = [this.partition];
-    this.outputs = [this.partition.labels];
-
     this.encodefn = identity;
+    this.limits = {};
+    this.partitions = [new ReactivePartition(this, just(Factor.singleton()))];
   }
+
+  encode = (encodefn: EncodeFn) => {
+    this.encodefn = encodefn;
+    this.partitions.forEach((partition) => (partition.encodefn = encodefn));
+    return this;
+  };
+
+  trackLimits = (
+    limitObject: Record<
+      string,
+      [ReduceFn<number, number>, (label: Record<string, any>) => number, number]
+    >
+  ) => {
+    for (const [key, [reducefn, selector, initialValue]] of Object.entries(
+      limitObject
+    )) {
+      this.limits[key] = () =>
+        this.encodings().reduce(
+          (result, nextValue) => reducefn(result, selector(nextValue)),
+          initialValue
+        );
+    }
+    return this;
+  };
+
+  encodings = () =>
+    Object.values(last(this.partitions).encodings()) as Record<string, any>[];
 
   bind = (key: string, bindfn: (values?: any) => any) => {
     if (bindfn.length < 1) {
@@ -60,13 +84,11 @@ export class Wrangler {
   };
 
   partitionBy = (...keys: string[]) => {
-    let partition = this.partition;
+    let partition = this.partitions[this.partitions.length - 1];
     for (const key of keys) {
       partition = partition.nest(this.get[key]);
       this.partitions.push(partition);
-      this.outputs.push(partition.labels);
     }
-    this.partition = partition;
     return this;
   };
 
@@ -83,6 +105,4 @@ export class Wrangler {
     this.statics[key] = value;
     return this;
   };
-
-  output = () => Object.values(this.partition.labels());
 }

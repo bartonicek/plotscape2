@@ -8,6 +8,8 @@ export const callWith =
   (fn: (x: T) => any) =>
     fn(x);
 
+export const last = (x: any[]) => x[x.length - 1];
+
 export const sum = (x: number, y: number) => x + y;
 export const diff = (x: number, y: number) => x - y;
 export const toInt = (x: string) => parseInt(x, 10);
@@ -88,16 +90,63 @@ export const rectOverlap = (
   );
 };
 
-// export const rectOverlap = (
-//   rect1: [[number, number], [number, number]],
-//   rect2: [[number, number], [number, number]]
-// ) => {
-//   const [p1x, p1y] = [0, 1].map((e) => rect1.map((f) => f[e]));
-//   const [p2x, p2y] = [0, 1].map((e) => rect2.map((f) => f[e]));
-//   return !(
-//     max(p1x) < min(p2x) ||
-//     min(p1x) > max(p2x) ||
-//     max(p1y) < min(p2y) ||
-//     min(p1y) > max(p2y)
-//   );
-// };
+export const incrementNumberSuffix = (
+  suffixedString: string,
+  amount: number
+) => {
+  const stringArray = suffixedString.split("");
+  const len = stringArray.length;
+  if (isNaN(+stringArray[len - 1])) return suffixedString + amount;
+
+  // Find frst index of the number suffix, starting from end of the string
+  let i = len - 1;
+  while (!isNaN(+stringArray[--i]));
+
+  const suffix = parseInt(stringArray.slice(i + 1, len).join(""), 10) + amount;
+  return stringArray.slice(0, i + 1).join("") + suffix;
+};
+
+export const disjointUnion = (
+  object1: Record<string, any>,
+  object2: Record<string, any>
+) => {
+  const [keys1, keys2] = [object1, object2].map(Object.keys);
+  const duplicateKeys = keys1.filter((x) => keys2.includes(x));
+
+  if (!duplicateKeys.length) return Object.assign({}, object1, object2);
+
+  const newKeys1 = duplicateKeys.map((x) => incrementNumberSuffix(x, 0));
+  const newKeys2 = duplicateKeys.map((x) => incrementNumberSuffix(x, 1));
+
+  const object1Copy: Record<string, any> = {};
+  const object2Copy: Record<string, any> = {};
+
+  const [values1, values2] = [object1, object1].map(Object.values);
+  for (let i = 0; i < values1.length; i++) {
+    object1Copy[newKeys1[i]] = values1[i];
+  }
+  for (let j = 0; j < values2.length; j++) {
+    object2Copy[newKeys2[j]] = values2[j];
+  }
+
+  return Object.assign({}, object1Copy, object2Copy);
+};
+
+export const stackerRect = (
+  result: Record<string, any>,
+  nextValue: Record<string, any>
+) => {
+  if (!result) return nextValue;
+  if (result.x0 !== nextValue.x0) return nextValue;
+  nextValue.y0 = result.height;
+  nextValue.height = result.height + nextValue.height;
+  return nextValue;
+};
+
+export const stackerIdentity = (
+  result: Record<string, any>,
+  nextValue: Record<string, any>
+) => {
+  nextValue.y1 = nextValue.height;
+  return nextValue;
+};
