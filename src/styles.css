@@ -41,13 +41,13 @@ canvas {
   }
 
   .plotscape-under {
-    background-color: #D6D6D6
+    background-color: #ededed
   }
 
   .plotscape-base {
-    background-color: #F7F7F2;
-    border-right: 2px solid #F7F7F2;
-    border-top: 2px solid #F7F7F2;
+    background-color: #FEFFFE;
+    border-right: 2px solid #FEFFFE;
+    border-top: 2px solid #FEFFFE;
   }
 
   .plotscape-user {

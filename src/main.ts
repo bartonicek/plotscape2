@@ -15,7 +15,7 @@ import { Factor } from "./wranglers/Factor";
 import { Marker } from "./wranglers/Marker";
 import { Wrangler } from "./wranglers/Wrangler";
 import { sumReducer } from "./wranglers/reducers";
-import { HistoPlot } from "./wrappers/HistoPlot";
+import { HistoPlot } from "./wrappers/plotWrappers/HistoPlot";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const dataMpg = await loadJSON("mpg.json");
@@ -26,4 +26,6 @@ createRoot(() => {
   const plot2 = new HistoPlot(scene1, { v1: "displ" });
   // const plot3 = new Plot(scene1);
   // const plot4 = new Plot(scene1);1
+
+  scene1.setRowsCols(2, 1);
 });

@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 
-export const makeGlobalStore = () => {
+export const makeSceneStore = () => {
   const [group, setGroup] = createSignal(1);
   const [selectedCases, setSelectedCases] = createSignal<number[]>([]);
 

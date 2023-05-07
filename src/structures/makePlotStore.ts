@@ -3,7 +3,7 @@ import { just, toInt } from "../funs";
 import { graphicParameters } from "../graphicParameters";
 import { Plot } from "./Plot";
 
-export const makeLocalStore = (plot: Plot) => {
+export const makePlotStore = (plot: Plot) => {
   const { container } = plot;
 
   const [active, setActive] = createSignal(false);

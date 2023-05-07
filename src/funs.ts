@@ -131,22 +131,3 @@ export const disjointUnion = (
 
   return Object.assign({}, object1Copy, object2Copy);
 };
-
-export const stackerRect = (
-  result: Record<string, any>,
-  nextValue: Record<string, any>
-) => {
-  if (!result) return nextValue;
-  if (result.x0 !== nextValue.x0) return nextValue;
-  nextValue.y0 = result.height;
-  nextValue.height = result.height + nextValue.height;
-  return nextValue;
-};
-
-export const stackerIdentity = (
-  result: Record<string, any>,
-  nextValue: Record<string, any>
-) => {
-  nextValue.y1 = nextValue.height;
-  return nextValue;
-};

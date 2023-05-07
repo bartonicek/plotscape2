@@ -1,31 +1,32 @@
+import { Accessor, createEffect, on } from "solid-js";
 import html from "solid-js/html";
-import { Dataframe } from "../types";
+import { clear, rectangle } from "../drawfuns";
+import { call, throttle } from "../funs";
+import { Rectangles } from "../representations.ts/Rectangles";
+import { Dataframe, PlotStore, Tuple4 } from "../types";
+import { Marker } from "../wranglers/Marker";
+import { Wrangler } from "../wranglers/Wrangler";
 import { GraphicLayer } from "./GraphicLayer";
 import { Scene } from "./Scene";
-import { makeLayers } from "./makeLayers";
-import { makeLocalStore } from "./makeLocalStore";
-import { batch, createEffect, on, onMount } from "solid-js";
 import {
   onKeyDown,
-  onMousedownInner,
-  onMousemoveInner,
+  onMouseDown,
+  onMouseMove,
   onMouseup,
   onResize,
 } from "./localEventHandlers";
+import { makeLayers } from "./makeLayers";
+import { makePlotStore } from "./makePlotStore";
 import { makeScales } from "./makeScales";
-import { Wrangler } from "../wranglers/Wrangler";
-import { Marker } from "../wranglers/Marker";
-import { Rectangles } from "../representations.ts/Rectangles";
-import { Encoder } from "../wranglers/Encoder";
-import { throttle } from "../funs";
 
 export class Plot {
   data: Dataframe;
   scene: Scene;
   container: HTMLDivElement;
+  mapping: Record<string, string>;
 
   layers: Record<string, GraphicLayer>;
-  store: ReturnType<typeof makeLocalStore>;
+  store: PlotStore;
   scales: ReturnType<typeof makeScales>;
 
   wrangler: Wrangler;
@@ -34,14 +35,15 @@ export class Plot {
 
   keyActions: Record<string, () => void>;
 
-  constructor(scene: Scene) {
+  constructor(scene: Scene, mapping: Record<string, string>) {
     this.data = scene.data;
     this.scene = scene;
+    this.mapping = mapping;
 
     this.container = html`<div class="plotscape-container" />`;
     scene.app.appendChild(this.container);
 
-    this.store = makeLocalStore(this);
+    this.store = makePlotStore(this);
     this.layers = makeLayers(this);
     this.scales = makeScales(this);
 
@@ -49,17 +51,23 @@ export class Plot {
     this.marker = scene.marker;
     this.representations = [];
 
-    const { canvas: topLayer } = this.layers.click;
+    const { container } = this;
 
-    onMount(() => {
-      topLayer.addEventListener("mousedown", onMousedownInner(this));
-      topLayer.addEventListener(
-        "mousemove",
-        throttle(onMousemoveInner(this), 50)
-      );
-      topLayer.addEventListener("mouseup", onMouseup(this));
+    createEffect(() => {
+      container.addEventListener("mousedown", onMouseDown(this));
+      container.addEventListener("mousemove", throttle(onMouseMove(this), 50));
+      container.addEventListener("mouseup", onMouseup(this));
       window.addEventListener("resize", onResize(this));
       window.addEventListener("keydown", throttle(onKeyDown(this), 50));
+    });
+
+    createEffect(() => {
+      const { context } = this.layers.user;
+      const { clickX, clickY, mouseX, mouseY } = this.store;
+      const [x0, x1, y0, y1] = [clickX, mouseX, clickY, mouseY].map(call);
+
+      clear(context);
+      rectangle(context, x0, x1, y0, y1, { alpha: 0.25 });
     });
 
     this.keyActions = {};
@@ -76,9 +84,19 @@ export class Plot {
     this.representations.push(representation);
 
     const { clickX, clickY, mouseX, mouseY } = this.store;
-    const dragCoords = [clickX, clickY, mouseX, mouseY];
+    const { setSelectedCases } = this.scene.store;
+    const selection: Tuple4<Accessor<number>> = [
+      clickX,
+      clickY,
+      mouseX,
+      mouseY,
+    ];
 
     createEffect(representation.draw);
-    createEffect(on(dragCoords, representation.updateSelection));
+    createEffect(
+      on(selection, (selection) => {
+        setSelectedCases(representation.getSelectedCases(selection));
+      })
+    );
   };
 }

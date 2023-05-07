@@ -3,9 +3,7 @@ export const graphicParameters = {
   width: 1,
   alpha: 1,
   colour: "#4682B4",
-  groupColours: ["red", "green", "blue", "yellow"],
-  backgroundColour: "#F7F7F2",
-  marginColour: "lightgray",
+  groupColours: [`#D1D5DE`, `#E41A1C`, `#377EB8`, `#4DAF4A`],
   fontsize: 12,
   marginLines: [4, 4, 2, 2] as const,
 };

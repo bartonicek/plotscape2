@@ -26,9 +26,11 @@ export class Marker {
       1: { group: 1, persisent: false, cases: [] },
       2: { group: 2, persistent: false, cases: [] },
       3: { group: 3, persisent: false, cases: [] },
+      4: { group: 4, persisent: false, cases: [] },
       129: { group: 1, persistent: true, cases: [] },
       130: { group: 2, persistent: true, cases: [] },
       131: { group: 3, persistent: true, cases: [] },
+      132: { group: 4, persisent: true, cases: [] },
     };
 
     this.cases = cases;
