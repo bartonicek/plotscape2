@@ -1,5 +1,5 @@
 import { batch } from "solid-js";
-import { callWith, throttle, toInt } from "../funs";
+import { toInt } from "../funs";
 import { Plot } from "./Plot";
 
 export const onResize = (plot: Plot) => () => {

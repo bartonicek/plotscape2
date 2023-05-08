@@ -4,6 +4,6 @@ export const graphicParameters = {
   alpha: 1,
   colour: "#4682B4",
   groupColours: [`#D1D5DE`, `#E41A1C`, `#377EB8`, `#4DAF4A`],
-  fontsize: 12,
+  fontsize: 8,
   marginLines: [4, 4, 2, 2] as const,
 };

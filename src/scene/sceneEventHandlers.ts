@@ -1,8 +1,10 @@
-import { Plot } from "./Plot";
 import { Scene } from "./Scene";
 
 export const onDoubleClick = (scene: Scene) => () => {
   scene.plots.forEach((plot) => plot.deactivate());
+  scene.marker.clearAll();
+  scene.store.setGroup(1);
+  scene.store.setSelectedCases([]);
 };
 
 export const onMousedown = (scene: Scene) => (event: MouseEvent) => {

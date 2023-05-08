@@ -22,3 +22,16 @@ export function rectangle(
   context.fillRect(x0, height - y0, w, -h);
   context.restore();
 }
+
+export function text(
+  context: CanvasRenderingContext2D,
+  label: string,
+  x: number,
+  y: number
+) {
+  context.save();
+  context.translate(x, y);
+  context.fillText(label, 0, 0);
+  context.translate(-x, -y);
+  context.restore();
+}

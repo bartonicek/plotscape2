@@ -1,11 +1,5 @@
-import {
-  Accessor,
-  Setter,
-  createEffect,
-  createSignal,
-  untrack,
-} from "solid-js";
-import { Factor } from "./Factor";
+import { Accessor, untrack } from "solid-js";
+import { Factor } from "../wranglers/Factor";
 
 export class Marker {
   n: number;
@@ -37,6 +31,10 @@ export class Marker {
     this.group = group;
   }
 
+  clearAll = () => {
+    this.indices.fill(1);
+  };
+
   factor = () => {
     const { indices, indexSet, labels } = this;
     const [cases, group] = [this.cases(), untrack(this.group)];
@@ -47,9 +45,7 @@ export class Marker {
         indices[cases[i]] = labelIndex;
       }
     } else {
-      for (let i = 0; i < cases.length; i++) {
-        indices[cases[i]] = group;
-      }
+      for (let i = 0; i < cases.length; i++) indices[cases[i]] = group;
     }
 
     return new Factor(indices, indexSet, labels);

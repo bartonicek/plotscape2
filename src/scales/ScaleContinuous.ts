@@ -31,6 +31,18 @@ export class ScaleContinuous implements Scale<number> {
     return this;
   };
 
+  domainMinExp = () => {
+    const [min, max] = this.domain.map(call);
+    const range = max - min;
+    return min - this.expand[0]() * range;
+  };
+
+  domainMaxExp = () => {
+    const [min, max] = this.domain.map(call);
+    const range = max - min;
+    return max + this.expand[1]() * range;
+  };
+
   pushforward = (value: number) => {
     const { domain, codomain, expand } = this;
     let [domainMin, domainMax] = domain.map(call);

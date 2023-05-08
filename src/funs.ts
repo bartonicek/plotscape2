@@ -131,3 +131,26 @@ export const disjointUnion = (
 
   return Object.assign({}, object1Copy, object2Copy);
 };
+
+export const prettyBreaks = (lower: number, upper: number, n = 4) => {
+  const range = upper - lower;
+  const unitGross = range / n;
+  const base = Math.floor(Math.log10(unitGross));
+
+  const neatValues = [1, 2, 4, 5, 10];
+  const dists = neatValues.map((e) => (e - unitGross / 10 ** base) ** 2);
+  const unitNeat = 10 ** base * neatValues[dists.indexOf(min(dists))];
+
+  const minimumNeat = Math.ceil(lower / unitNeat) * unitNeat;
+  const maximumNeat = Math.floor(upper / unitNeat) * unitNeat;
+
+  const middle = Array.from(
+    Array(Math.round((maximumNeat - minimumNeat) / unitNeat - 1)),
+    (_, i) => minimumNeat + (i + 1) * unitNeat
+  );
+  const breaks = [minimumNeat, ...middle, maximumNeat].map((e) =>
+    parseFloat(e.toFixed(4))
+  );
+
+  return breaks;
+};

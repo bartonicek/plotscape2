@@ -1,13 +1,13 @@
 import { createEffect } from "solid-js";
 import { Dataframe, SceneStore } from "../types";
-import { Marker } from "../wranglers/Marker";
-import { Plot } from "./Plot";
+import { Marker } from "./Marker";
+import { Plot } from "../plot/Plot";
 import {
   onDoubleClick,
   onKeyDown,
   onKeyUp,
   onMousedown,
-} from "./globalEventHandlers";
+} from "./sceneEventHandlers";
 import { makeSceneStore } from "./makeSceneStore";
 
 export class Scene {

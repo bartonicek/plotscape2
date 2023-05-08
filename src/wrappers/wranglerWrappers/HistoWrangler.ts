@@ -1,10 +1,10 @@
 import { max, min } from "../../funs";
-import { Plot } from "../../structures/Plot";
+import { Plot } from "../../plot/Plot";
 import { Factor } from "../../wranglers/Factor";
 import { Wrangler } from "../../wranglers/Wrangler";
 import { countReducer } from "../../wranglers/reducers";
 
-export function makeHisto(plot: Plot) {
+export function buildHisto(plot: Plot) {
   return new Wrangler()
     .bindMarker(plot.marker)
     .bindData(plot.mapping, plot.scene.data)

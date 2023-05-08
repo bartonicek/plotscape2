@@ -6,18 +6,17 @@ import { Scene } from "../../scene/Scene";
 import { buildHisto } from "../wranglerWrappers/HistoWrangler";
 import { clear } from "../../drawfuns";
 import { buildSpine } from "../wranglerWrappers/SpineWrangler";
+import { stackRectHV } from "../../wranglers/stackers";
 
-export class HistoPlot extends Plot {
+export class SpinePlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
     super(scene, mapping);
 
-    this.wrangler = buildHisto(this);
-
+    this.wrangler = buildSpine(this);
     const { limits } = this.wrangler;
+
     this.scales.dataInner.x.setDomain(limits.xMin, limits.xMax);
-    this.scales.dataInner.y.setDomain(limits.yMin, limits.yMax);
     this.scales.dataOuter.x.setDomain(limits.xMin, limits.xMax);
-    this.scales.dataOuter.y.setDomain(limits.yMin, limits.yMax);
 
     Object.assign(this.keyActions, {
       Equal: () => this.wrangler.set.widthX((width) => (width * 11) / 10),
@@ -36,5 +35,6 @@ export class HistoPlot extends Plot {
     });
 
     this.addRepresentation(new Rectangles(this));
+    this.representations[0].stackfn = stackRectHV;
   }
 }

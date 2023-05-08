@@ -42,10 +42,19 @@ export const makeScales = (plot: Plot) => {
     .setCodomain(just(0), innerHeight)
     .setExpand(just(0.1), just(0.1));
 
+  const dataOuterX = new ScaleContinuous()
+    .setCodomain(innerLeft, innerRight)
+    .setExpand(just(0.1), just(0.1));
+
+  const dataOuterY = new ScaleContinuous()
+    .setCodomain(innerBottom, innerTop)
+    .setExpand(just(0.1), just(0.1));
+
   return {
     outerPct: { x: outerPctX, y: outerPctY },
     innerPct: { x: innerPctX, y: innerPctY },
     outerAbs: { x: outerAbsX, y: outerAbsY },
-    data: { x: dataX, y: dataY },
+    dataInner: { x: dataX, y: dataY },
+    dataOuter: { x: dataOuterX, y: dataOuterY },
   };
 };

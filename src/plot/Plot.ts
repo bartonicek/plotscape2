@@ -4,20 +4,21 @@ import { clear, rectangle } from "../drawfuns";
 import { call, throttle } from "../funs";
 import { Rectangles } from "../representations.ts/Rectangles";
 import { Dataframe, PlotStore, Tuple4 } from "../types";
-import { Marker } from "../wranglers/Marker";
+import { Marker } from "../scene/Marker";
 import { Wrangler } from "../wranglers/Wrangler";
 import { GraphicLayer } from "./GraphicLayer";
-import { Scene } from "./Scene";
+import { Scene } from "../scene/Scene";
 import {
   onKeyDown,
   onMouseDown,
   onMouseMove,
   onMouseup,
   onResize,
-} from "./localEventHandlers";
+} from "./plotEventHandlers";
 import { makeLayers } from "./makeLayers";
 import { makePlotStore } from "./makePlotStore";
 import { makeScales } from "./makeScales";
+import { AxisLabelsContinuous } from "../axes/AxisLabelsContinuous";
 
 export class Plot {
   data: Dataframe;
@@ -32,6 +33,7 @@ export class Plot {
   wrangler: Wrangler;
   marker: Marker;
   representations: Rectangles[];
+  auxilaries: AxisLabelsContinuous[];
 
   keyActions: Record<string, () => void>;
 
@@ -50,6 +52,7 @@ export class Plot {
     this.wrangler = new Wrangler();
     this.marker = scene.marker;
     this.representations = [];
+    this.auxilaries = [];
 
     const { container } = this;
 
@@ -79,6 +82,11 @@ export class Plot {
 
   activate = () => this.store.activate();
   deactivate = () => this.store.deactivate();
+
+  addAuxilary = (auxilary: AxisLabelsContinuous) => {
+    this.auxilaries.push(auxilary);
+    createEffect(auxilary.draw);
+  };
 
   addRepresentation = (representation: Rectangles) => {
     this.representations.push(representation);

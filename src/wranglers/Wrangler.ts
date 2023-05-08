@@ -1,7 +1,7 @@
 import { Accessor, Setter, createMemo, createSignal } from "solid-js";
-import { EncodeFn, ReduceFn, Reducer } from "../types";
+import { EncodeFn, Label, ReduceFn, Reducer, StackFn } from "../types";
 import { Factor } from "./Factor";
-import { Marker } from "./Marker";
+import { Marker } from "../scene/Marker";
 import { ReactivePartition } from "./ReactivePartition";
 import { identity, just, last, mapObject, rectOverlap } from "../funs";
 
@@ -11,6 +11,7 @@ export class Wrangler {
 
   partitions: ReactivePartition[];
   encodefn: EncodeFn;
+  stackfn: StackFn;
   limits: Record<string, Accessor<number>>;
 
   reducables: Record<string, { array: any[] } & Reducer<any, any>>;
@@ -24,6 +25,7 @@ export class Wrangler {
     this.statics = {};
 
     this.encodefn = identity;
+    this.stackfn = (_, nextLabel) => nextLabel;
     this.limits = {};
     this.partitions = [new ReactivePartition(this, just(Factor.singleton()))];
   }
@@ -31,6 +33,12 @@ export class Wrangler {
   encode = (encodefn: EncodeFn) => {
     this.encodefn = encodefn;
     this.partitions.forEach((partition) => (partition.encodefn = encodefn));
+    return this;
+  };
+
+  stack = (stackfn: StackFn) => {
+    this.stackfn = stackfn;
+    this.partitions.forEach((partition) => (partition.stackfn = stackfn));
     return this;
   };
 

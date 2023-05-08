@@ -1,5 +1,5 @@
 import { Accessor, createMemo } from "solid-js";
-import { EncodeFn, Reducer } from "../types";
+import { EncodeFn, Label, Reducer, StackFn } from "../types";
 import { Factor } from "./Factor";
 import { Wrangler } from "./Wrangler";
 
@@ -56,14 +56,18 @@ export class ReactivePartition {
       const ownLabelSet = Object.assign({}, ...ownLabels);
 
       const parentLabelSet = parentLabels?.[parentIndexMap?.[key] ?? 0] ?? [];
-      const combinedLabelSet = [
+
+      // Need to copy parent labels since each may have multiple children
+      const combinedLabelSet: Record<string, any>[] = [
         ...(parentLabelSet as Record<string, any>[]),
         ownLabelSet,
       ];
 
-      // If leaf partition, encode labels into graphical encodings
-      if (!child) result[key] = encodefn(combinedLabelSet);
-      else result[key] = combinedLabelSet;
+      // If leaf partition, encode labels into graphical encodings and stack
+      if (!child) {
+        const encodings = encodefn(combinedLabelSet);
+        result[key] = encodings;
+      } else result[key] = combinedLabelSet;
     }
 
     return result;
