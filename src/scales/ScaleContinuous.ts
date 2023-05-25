@@ -1,14 +1,16 @@
 import { Accessor, createMemo } from "solid-js";
-import { Scale } from "./Scale";
+import { just } from "../funs";
 import { Tuple2 } from "../types";
-import { call, just } from "../funs";
+import { Scale } from "./Scale";
 
-export class ScaleContinuous implements Scale<number> {
+export class ScaleContinuous implements Scale {
+  identity: boolean;
   domain: Tuple2<Accessor<number>>;
   codomain: Tuple2<Accessor<number>>;
   expand: Tuple2<Accessor<number>>;
 
   constructor() {
+    this.identity = false;
     this.domain = [just(0), just(1)];
     this.codomain = [just(0), just(1)];
     this.expand = [just(0), just(0)];
@@ -16,8 +18,16 @@ export class ScaleContinuous implements Scale<number> {
 
   static of = () => new ScaleContinuous();
 
+  domainRange = () => this.domain[1]() - this.domain[0]();
+  codomainRange = () => this.codomain[1]() - this.codomain[0]();
+
   setDomain = (lower: Accessor<number>, upper: Accessor<number>) => {
-    this.domain = [createMemo(lower), createMemo(upper)];
+    // Need to expand the domain
+    const [expandLower, expandUpper] = this.expand;
+    const range = () => upper() - lower();
+    const newLower = () => lower() - expandLower() * range();
+    const newUpper = () => upper() + expandUpper() * range();
+    this.domain = [createMemo(newLower), createMemo(newUpper)];
     return this;
   };
 
@@ -31,49 +41,17 @@ export class ScaleContinuous implements Scale<number> {
     return this;
   };
 
-  domainMinExp = () => {
-    const [min, max] = this.domain.map(call);
-    const range = max - min;
-    return min - this.expand[0]() * range;
-  };
-
-  domainMaxExp = () => {
-    const [min, max] = this.domain.map(call);
-    const range = max - min;
-    return max + this.expand[1]() * range;
-  };
-
   pushforward = (value: number) => {
-    const { domain, codomain, expand } = this;
-    let [domainMin, domainMax] = domain.map(call);
-    const [codomainMin, codomainMax] = codomain.map(call);
-    const [expandMin, expandMax] = expand.map(call);
-
-    // Rescale domain by expand
-    let domainRange = domainMax - domainMin;
-    domainMin = domainMin - expandMin * domainRange;
-    domainMax = domainMax + expandMax * domainRange;
-    domainRange = domainMax - domainMin;
-
-    const codomainRange = codomainMax - codomainMin;
-
-    return codomainMin + ((value - domainMin) / domainRange) * codomainRange;
+    const { domain, codomain, domainRange, codomainRange } = this;
+    return (
+      codomain[0]() + ((value - domain[0]()) / domainRange()) * codomainRange()
+    );
   };
 
   pullback = (value: number) => {
-    const { domain, codomain, expand } = this;
-    let [domainMin, domainMax] = domain.map(call);
-    const [codomainMin, codomainMax] = codomain.map(call);
-    const [expandMin, expandMax] = expand.map(call);
-
-    // Rescale domain by expand
-    let domainRange = domainMax - domainMin;
-    domainMin = domainMin - expandMin * domainRange;
-    domainMax = domainMax + expandMax * domainRange;
-    domainRange = domainMax - domainMin;
-
-    const codomainRange = codomainMax - codomainMin;
-
-    return domainMin + ((value - codomainMin) / codomainRange) * domainRange;
+    const { domain, codomain, domainRange, codomainRange } = this;
+    return (
+      domain[0]() + ((value - codomain[0]()) / codomainRange()) * domainRange()
+    );
   };
 }

@@ -6,6 +6,8 @@ export const onResize = (plot: Plot) => () => {
   const { setWidth, setHeight } = plot.store;
   setWidth(toInt(getComputedStyle(plot.container)["width"]));
   setHeight(toInt(getComputedStyle(plot.container)["height"]));
+  plot.representations.forEach((representation) => representation.draw());
+  plot.auxilaries.forEach((auxilary) => auxilary.draw());
 };
 
 export const onMouseDown = (plot: Plot) => (event: MouseEvent) => {
@@ -21,6 +23,7 @@ export const onMouseDown = (plot: Plot) => (event: MouseEvent) => {
   } = plot.store;
 
   plot.scene.plots.forEach((plot) => plot.deactivate());
+  plot.scene.marker.clearTransient();
   plot.activate();
 
   const [x, y] = [

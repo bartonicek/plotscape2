@@ -2,14 +2,14 @@ import { Accessor, Setter, createMemo, createSignal } from "solid-js";
 import { EncodeFn, Label, ReduceFn, Reducer, StackFn } from "../types";
 import { Factor } from "./Factor";
 import { Marker } from "../scene/Marker";
-import { ReactivePartition } from "./ReactivePartition";
+import { Partition } from "./Partition";
 import { identity, just, last, mapObject, rectOverlap } from "../funs";
 
 export class Wrangler {
   get: Record<string, Accessor<any>>;
   set: Record<string, Setter<any>>;
 
-  partitions: ReactivePartition[];
+  partitions: Partition[];
   encodefn: EncodeFn;
   stackfn: StackFn;
   limits: Record<string, Accessor<number>>;
@@ -27,7 +27,7 @@ export class Wrangler {
     this.encodefn = identity;
     this.stackfn = (_, nextLabel) => nextLabel;
     this.limits = {};
-    this.partitions = [new ReactivePartition(this, just(Factor.singleton()))];
+    this.partitions = [new Partition(this, just(Factor.singleton()))];
   }
 
   encode = (encodefn: EncodeFn) => {
@@ -60,8 +60,12 @@ export class Wrangler {
     return this;
   };
 
-  encodings = () =>
-    Object.values(last(this.partitions).encodings()) as Record<string, any>[];
+  partitionLabels = () => {
+    return this.partitions.map((x) => Object.values(x.upperLabelSet()));
+  };
+
+  labels = () => last(this.partitions).labels();
+  encodings = () => last(this.partitions).encodings() as Record<string, any>[];
 
   bind = (key: string, bindfn: (values?: any) => any) => {
     if (bindfn.length < 1) {

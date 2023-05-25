@@ -23,7 +23,7 @@ canvas {
 }
 
 .plotscape-container.active {
-  outline: 1px solid black;
+  outline: 1px solid #7A7A7A;
 }
 
 .plotscape-scene {
@@ -35,23 +35,33 @@ canvas {
     padding: 2%;
     padding-top: 4%;
     padding-bottom: 4%;
-    grid-gap: 1em;
+    grid-gap: 2%;
     box-shadow: inset 2px 2px 5px #00000025;
     overflow: hidden;
   }
 
-  .plotscape-under {
-    background-color: #ededed
-  }
+.plotscape-under {
+  z-index: 1;
+  background-color: #ededed
+}
 
-  .plotscape-base {
-    background-color: #FEFFFE;
-    border-right: 2px solid #FEFFFE;
-    border-top: 2px solid #FEFFFE;
-  }
+.plotscape-base {
+  z-index: 2;
+  background-color: #FEFFFE;
+  border-right: 2px solid #FEFFFE;
+  border-top: 2px solid #FEFFFE;
+}
 
-  .plotscape-user {
-    border-left: 2px solid #3D3D3D;
-    border-bottom: 2px solid #3D3D3D;
-  }
+.plotscape-highlight {
+  z-index: 3;
+}
 
+.plotscape-user {
+  z-index: 4;
+  border-left: 2px solid #3D3D3D;
+  border-bottom: 2px solid #3D3D3D;
+}
+
+.plotscape-over {
+  z-index: 5;
+}

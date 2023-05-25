@@ -2,6 +2,7 @@ export type RepresentationEncodings = {
   fill: number;
   group: number;
   cases: number[];
+  id: symbol;
 };
 
 export type RectEncodings = RepresentationEncodings & {

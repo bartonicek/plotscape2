@@ -1,46 +1,56 @@
-import {
-  Accessor,
-  Setter,
-  createEffect,
-  createRoot,
-  createSignal,
-  on,
-  untrack,
-} from "solid-js";
-import { loadJSON, prettyBreaks, rectOverlap } from "./funs";
-import { Plot } from "./plot/Plot";
+import { Accessor, createRoot } from "solid-js";
+import { identity, last, loadJSON, argSecond, pick } from "./funs";
+import { ScaleData } from "./scales/ScaleData";
 import { Scene } from "./scene/Scene";
 import "./styles.css";
-import { Factor } from "./wranglers/Factor";
-import { Marker } from "./scene/Marker";
-import { Wrangler } from "./wranglers/Wrangler";
-import { sumReducer } from "./wranglers/reducers";
 import { HistoPlot } from "./wrappers/plotWrappers/HistoPlot";
-import { SpinePlot } from "./wrappers/plotWrappers/SpinePlot";
+import { BarPlot } from "./wrappers/plotWrappers/BarPlot";
+import { Wrangler } from "./wranglers/Wrangler";
+import { Partition } from "./wranglers/ReactivePartition";
+import { EncodeFn, ReduceFn, StackFn } from "./types";
+import { createMutable } from "solid-js/store";
+import { stackRectVertical } from "./wranglers/stackers";
+import { symbolName } from "typescript";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const dataMpg = await loadJSON("mpg.json");
 
-createRoot(() => {
-  const scene1 = new Scene(app, dataMpg);
-  const plot1 = new HistoPlot(scene1, { v1: "hwy" });
-  const plot2 = new HistoPlot(scene1, { v1: "displ" });
-  // const plot3 = new Plot(scene1);
-  // const plot4 = new Plot(scene1);1
+const scene1 = new Scene(app, dataMpg);
+const plot1 = new HistoPlot(scene1, { v1: "hwy" });
+const plot2 = new HistoPlot(scene1, { v1: "displ" });
 
-  scene1.setRowsCols(2, 1);
-});
+scene1.setRowsCols(2, 1);
 
-const label1 = JSON.parse(
-  `{"x0":1.06,"x1":1.6,"y0":0,"y1":5,"fill":5,"group":1,"cases":[99,100,101,102,103]}`
-);
-const label2 = JSON.parse(
-  `{"x0":1.06,"x1":2.14,"y0":0,"y1":38,"fill":38,"group":1,"cases":[0,1,2,3,7,8,9,10,104,105,106,107,115,116,117,118,193,194,195,196,197,207,208,209,210,212,213,214,215,216,221,222,223,224,227,228,229,230]}`
-);
+plot1.scene.store.setSelectedCases([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
-function encode(
-  previousLabel: Record<string, any>[],
-  nextLabel: Record<string, any>[]
-) {
-  if (previousLabel[1].x0 !== previousLabel[1].x0) return nextLabel;
-}
+const labelSet = plot1.wrangler.partitions[2]
+  .upperLabelSet()
+  .map(Object.values);
+
+const stack = <T>(
+  partitions: Record<string, any>[][],
+  depth: number,
+  stackfn: (node: Record<string, any>, stackedValue: T) => void,
+  initialValue: any
+) => {
+  const temp = Symbol();
+  const parents = new Set<Record<string | symbol, any>>();
+
+  for (const part of partitions[depth]) {
+    const parent = part.parent;
+    parents.add(parent);
+    if (!(temp in parent)) parent[temp] = initialValue;
+    parent[temp] = stackfn(part, parent[temp]);
+  }
+
+  for (const parent of parents) delete parent[temp];
+};
+
+const stackStartEnd = (node: Record<string, any>, stacked: number) => {
+  node.empty = stacked;
+  node.summary = stacked + node.summary;
+  return node.summary;
+};
+
+stack(labelSet, 2, stackStartEnd, 0);
+stack(labelSet, 1, stackStartEnd, 0);

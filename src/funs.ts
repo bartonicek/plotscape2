@@ -2,11 +2,21 @@ import { Tuple2 } from "./types";
 
 export const identity = (x: any) => x;
 export const just = (x: any) => () => x;
+export const argSecond = (x: any, y: any) => y;
 export const call = (fn: Function) => fn();
 export const callWith =
   <T>(x: T) =>
   (fn: (x: T) => any) =>
     fn(x);
+
+export const pick = <T extends Record<string, any>, K extends keyof T>(
+  object: T,
+  props: K[]
+) => {
+  const result = {} as Partial<T>;
+  for (const prop of props) result[prop] = object[prop];
+  return result;
+};
 
 export const last = (x: any[]) => x[x.length - 1];
 

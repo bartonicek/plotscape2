@@ -33,9 +33,9 @@ export class Scene {
     this.marker = new Marker(n, selectedCases, group);
 
     this.keyActions = {
-      Digit1: () => this.store.setGroup(2),
-      Digit2: () => this.store.setGroup(3),
-      Digit3: () => this.store.setGroup(4),
+      Digit1: () => this.store.setGroup(3),
+      Digit2: () => this.store.setGroup(4),
+      Digit3: () => this.store.setGroup(5),
     };
 
     createEffect(() => {

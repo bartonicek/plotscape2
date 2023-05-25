@@ -17,7 +17,7 @@ export class Factor {
   constructor(
     indices: number[],
     indexSet: Set<number>,
-    labels: Record<number, any>,
+    labels: Record<number, Record<string, any>>,
     singleton = false
   ) {
     this.indices = indices;
@@ -26,6 +26,9 @@ export class Factor {
     this.singleton = singleton;
   }
 
+  toString = () =>
+    `Factor {n : ${this.indices.length}, k: ${this.indexSet.size}}`;
+
   static singleton = () => new Factor([], new Set([0]), { 0: {} }, true);
 
   static from = (values: string[], labels?: string[]) => {
@@ -33,7 +36,7 @@ export class Factor {
 
     const labelObj = {} as Record<string, any>;
     for (let i = 0; i < labels.length; i++)
-      labelObj[i] = { label: labels[i], cases: [] };
+      labelObj[i] = { label: labels[i], cases: [], id: Symbol() };
 
     const indices = Array(values.length);
     const indexSet = new Set<number>();
@@ -72,7 +75,7 @@ export class Factor {
       indices[j] = index;
       indexSet.add(index);
       if (!labels[index]) {
-        labels[index] = { cases: [] };
+        labels[index] = { cases: [], id: Symbol() };
       }
       labels[index].cases.push(j);
     }
@@ -112,6 +115,7 @@ export class Factor {
           return disjointUnion(result, labelsCopy);
         }, {});
         labels[combinedIndex].cases = [];
+        labels[combinedIndex].id = Symbol();
         indexSet.add(combinedIndex);
       }
 

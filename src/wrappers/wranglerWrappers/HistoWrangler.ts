@@ -18,14 +18,15 @@ export function buildHisto(plot: Plot) {
       Factor.bin(v1(), width(), anchor())
     )
     .partitionBy("bins", "marker")
-    .addReducer("count", "v1", countReducer)
+    .addReducer("summary", "v1", countReducer)
     .addStatic("empty", 0)
     .encode((label) => ({
       x0: label[1].binMin,
       x1: label[1].binMax,
       y0: label[1].empty,
-      y1: label[1].count,
-      fill: label[2].count,
+      y1: label[1].summary,
+      id: label[1].id,
+      fill: label[2].summary,
       group: label[2].group,
       cases: label[2].cases,
     }))
