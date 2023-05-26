@@ -1,44 +1,27 @@
-import { RectEncodings } from "../encodingTypes";
-import { just } from "../funs";
-import { CombineFn, CompareFn } from "../types";
+export const stackPartitions = <T>(
+  partitions: Record<string, any>[][],
+  depth: number,
+  stackfn: (node: Record<string, any>, stackedValue: T) => void,
+  initialValue: any
+) => {
+  const temp = Symbol();
+  const parents = new Set<Record<string | symbol, any>>();
 
-export const makeStacker =
-  <T extends Record<string, any>>(
-    comparefn: CompareFn<T>,
-    stackfn: CombineFn<T>
-  ) =>
-  (result: T, nextValue: T) => {
-    if (!result) return nextValue;
-    if (!comparefn(result, nextValue)) return nextValue;
-    return stackfn(result, nextValue);
-  };
-
-export type StackFn<T extends Record<string, any>> = ReturnType<
-  typeof makeStacker<T>
->;
-
-export const stackRectVertical = makeStacker<RectEncodings>(
-  (result, nextValue) => result.id === nextValue.id,
-  (result, nextValue) => {
-    nextValue.y0 = result.fill;
-    nextValue.fill = result.fill + nextValue.fill;
-    return nextValue;
+  for (const part of partitions[depth]) {
+    const parent = part.parent;
+    parents.add(parent);
+    if (!(temp in parent)) parent[temp] = initialValue;
+    parent[temp] = stackfn(part, parent[temp]);
   }
-);
 
-// export const stackRectHV = makeStacker<RectEncodings>(
-//   (result, nextValue) => true,
-//   (result, nextValue) => {
-//     nextValue.x0 = result.x1;
-//     nextValue.x1 = nextValue.x1 + result.x1;
-//     return nextValue;
-//   }
-// );
+  for (const parent of parents) delete parent[temp];
+};
 
-export const stackRectIdentity = makeStacker<RectEncodings>(
-  just(true),
-  (_, nextValue) => {
-    nextValue.y1 = nextValue.fill;
-    return nextValue;
-  }
-);
+export const stackRectVertical = (
+  node: Record<string, any>,
+  stacked: number
+) => {
+  node.y0 = stacked;
+  node.y1 = stacked + node.y1;
+  return node.y1;
+};

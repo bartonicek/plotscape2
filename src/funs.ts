@@ -1,4 +1,4 @@
-import { Tuple2 } from "./types";
+import { RelabelFn, Tuple2 } from "./types";
 
 export const identity = (x: any) => x;
 export const just = (x: any) => () => x;
@@ -151,16 +151,21 @@ export const prettyBreaks = (lower: number, upper: number, n = 4) => {
   const dists = neatValues.map((e) => (e - unitGross / 10 ** base) ** 2);
   const unitNeat = 10 ** base * neatValues[dists.indexOf(min(dists))];
 
-  const minimumNeat = Math.ceil(lower / unitNeat) * unitNeat;
-  const maximumNeat = Math.floor(upper / unitNeat) * unitNeat;
+  const minNeat = Math.ceil(lower / unitNeat) * unitNeat;
+  const maxNeat = Math.floor(upper / unitNeat) * unitNeat;
 
-  const middle = Array.from(
-    Array(Math.round((maximumNeat - minimumNeat) / unitNeat - 1)),
-    (_, i) => minimumNeat + (i + 1) * unitNeat
-  );
-  const breaks = [minimumNeat, ...middle, maximumNeat].map((e) =>
+  const n2 = Math.round((maxNeat - minNeat) / unitNeat - 1);
+  const middle = Array.from(Array(n2), (_, i) => minNeat + (i + 1) * unitNeat);
+  const breaks = [minNeat, ...middle, maxNeat].map((e) =>
     parseFloat(e.toFixed(4))
   );
 
   return breaks;
 };
+
+export const relabelWith =
+  (relabelfn: RelabelFn, extraProp: string) => (label: Record<string, any>) => {
+    const result = relabelfn(label);
+    result[extraProp] = label[extraProp];
+    return result;
+  };

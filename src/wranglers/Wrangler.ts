@@ -1,71 +1,36 @@
 import { Accessor, Setter, createMemo, createSignal } from "solid-js";
-import { EncodeFn, Label, ReduceFn, Reducer, StackFn } from "../types";
-import { Factor } from "./Factor";
+import { just, last, relabelWith } from "../funs";
 import { Marker } from "../scene/Marker";
+import { ReduceFn, Reducer, RelabelFn } from "../types";
+import { Factor } from "./Factor";
 import { Partition } from "./Partition";
-import { identity, just, last, mapObject, rectOverlap } from "../funs";
 
 export class Wrangler {
-  get: Record<string, Accessor<any>>;
-  set: Record<string, Setter<any>>;
+  n: number;
+
+  get: Record<string | symbol, Accessor<any>>;
+  set: Record<string | symbol, Setter<any>>;
 
   partitions: Partition[];
-  encodefn: EncodeFn;
-  stackfn: StackFn;
-  limits: Record<string, Accessor<number>>;
-
   reducables: Record<string, { array: any[] } & Reducer<any, any>>;
   statics: Record<string, any>;
+  limits: Record<string, Accessor<number>>;
+  nothing: symbol;
 
   constructor() {
+    this.n = 0;
+
     this.get = {};
     this.set = {};
 
     this.reducables = {};
     this.statics = {};
-
-    this.encodefn = identity;
-    this.stackfn = (_, nextLabel) => nextLabel;
+    this.partitions = [new Partition(just(Factor.singleton()))];
     this.limits = {};
-    this.partitions = [new Partition(this, just(Factor.singleton()))];
+    this.nothing = Symbol();
   }
 
-  encode = (encodefn: EncodeFn) => {
-    this.encodefn = encodefn;
-    this.partitions.forEach((partition) => (partition.encodefn = encodefn));
-    return this;
-  };
-
-  stack = (stackfn: StackFn) => {
-    this.stackfn = stackfn;
-    this.partitions.forEach((partition) => (partition.stackfn = stackfn));
-    return this;
-  };
-
-  trackLimits = (
-    limitObject: Record<
-      string,
-      [ReduceFn<number, number>, (label: Record<string, any>) => number, number]
-    >
-  ) => {
-    for (const [key, [reducefn, selector, initialValue]] of Object.entries(
-      limitObject
-    )) {
-      this.limits[key] = () =>
-        this.encodings().reduce(
-          (result, nextValue) => reducefn(result, selector(nextValue)),
-          initialValue
-        );
-    }
-    return this;
-  };
-
-  partitionLabels = () => {
-    return this.partitions.map((x) => Object.values(x.upperLabelSet()));
-  };
-
-  labels = () => last(this.partitions).labels();
-  encodings = () => last(this.partitions).encodings() as Record<string, any>[];
+  partitionLabels = () => last(this.partitions).upperLabelSet();
 
   bind = (key: string, bindfn: (values?: any) => any) => {
     if (bindfn.length < 1) {
@@ -84,12 +49,11 @@ export class Wrangler {
   };
 
   bindData = (mapping: Record<string, string>, data: Record<string, any[]>) => {
+    this.n = data[Object.keys(data)[0]].length;
     for (const [varKey, dataKey] of Object.entries(mapping)) {
       const [getter, setter] = createSignal(data[dataKey]);
       this.get[varKey] = getter;
-      this.get["_nothing_"] = () => {};
-      this.get["_ones_"] = () =>
-        Array(data[Object.keys(data)[0]].length).fill(1);
+      this.get[this.nothing] = () => Array(this.n).fill(0);
       this.set[varKey] = setter as Setter<any>;
     }
     return this;
@@ -104,17 +68,57 @@ export class Wrangler {
     return this;
   };
 
+  trackLimit = (
+    limitKey: string,
+    varKey: string,
+    depth: number,
+    reducefn: ReduceFn<number, number>,
+    initialValue: number
+  ) => {
+    this.limits[limitKey] = () =>
+      this.partitions[depth]
+        .upperLabelSet()
+        [depth].reduce((a, b) => reducefn(a, b[varKey]), initialValue);
+    return this;
+  };
+
+  relabelAt = (depth: number, relabelfn: RelabelFn) => {
+    this.partitions[depth].relabelfn = (label) => ({
+      ...relabelfn(label),
+      group: label.group,
+      cases: label.cases,
+      parent: label.parent,
+    });
+    return this;
+  };
+
+  relabelAll = (relabelfn: RelabelFn) => {
+    for (const partition of this.partitions) {
+      partition.relabelfn = (label) => ({
+        ...relabelfn(label),
+        group: label.group,
+        cases: label.cases,
+        parent: label.parent,
+      });
+    }
+    return this;
+  };
+
   addReducer = <T, U>(
     key: string,
-    arrayKey: string,
-    reducer: Reducer<T, U>
+    reducer: Reducer<T, U>,
+    arrayKey?: string
   ) => {
-    this.reducables[key] = { array: this.get[arrayKey](), ...reducer };
+    const { get, nothing, partitions } = this;
+    const array = get[arrayKey ?? nothing]();
+    for (const partition of partitions) {
+      partition.addReducer(key, array, reducer);
+    }
     return this;
   };
 
   addStatic = (key: string, value: any) => {
-    this.statics[key] = value;
+    for (const partition of this.partitions) partition.addStatic(key, value);
     return this;
   };
 }

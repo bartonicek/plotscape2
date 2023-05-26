@@ -36,7 +36,7 @@ export class Factor {
 
     const labelObj = {} as Record<string, any>;
     for (let i = 0; i < labels.length; i++)
-      labelObj[i] = { label: labels[i], cases: [], id: Symbol() };
+      labelObj[i] = { label: labels[i], cases: [] };
 
     const indices = Array(values.length);
     const indexSet = new Set<number>();
@@ -53,7 +53,7 @@ export class Factor {
 
   static bin = (values: number[], width?: number, anchor?: number) => {
     const [min, max] = [Math.min(...values), Math.max(...values)];
-    const nbins = width ? Math.floor((max - min) / width) + 1 : 10;
+    const nbins = width ? Math.ceil((max - min) / width) + 1 : 10;
     width = width ?? (max - min) / (nbins - 1);
     anchor = anchor ?? min;
 
@@ -74,9 +74,7 @@ export class Factor {
       const index = breaks.findIndex((br) => br >= values[j]) - 1;
       indices[j] = index;
       indexSet.add(index);
-      if (!labels[index]) {
-        labels[index] = { cases: [], id: Symbol() };
-      }
+      if (!labels[index]) labels[index] = { cases: [] };
       labels[index].cases.push(j);
     }
 
@@ -115,7 +113,6 @@ export class Factor {
           return disjointUnion(result, labelsCopy);
         }, {});
         labels[combinedIndex].cases = [];
-        labels[combinedIndex].id = Symbol();
         indexSet.add(combinedIndex);
       }
 
