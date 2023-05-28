@@ -1,6 +1,8 @@
 import { Accessor, untrack } from "solid-js";
 import { Factor } from "../wranglers/Factor";
 
+export const GROUPS = {};
+
 export class Marker {
   n: number;
   indices: number[];

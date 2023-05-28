@@ -17,13 +17,11 @@ export class HistoPlot extends Plot {
       scale.data.y.setDomain!(limits.yMin, limits.yMax);
     }
 
-    createEffect(() => console.log(this.wrangler.get.bins().labels));
-
     Object.assign(this.keyActions, {
       Equal: () => this.wrangler.set.width((width) => (width * 11) / 10),
       Minus: () => this.wrangler.set.width((width) => (width * 9) / 10),
-      // BracketRight: () => this.wrangler.set.anchor((anchor) => anchor + 1),
-      // BracketLeft: () => this.wrangler.set.anchor((anchor) => anchor - 1),
+      BracketRight: () => this.wrangler.set.anchor((anchor) => anchor + 1),
+      BracketLeft: () => this.wrangler.set.anchor((anchor) => anchor - 1),
     });
 
     const xAxis = new AxisLabelsContinuous(this, "x");

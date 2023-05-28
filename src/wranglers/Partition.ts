@@ -75,7 +75,7 @@ export class Partition {
         ...computedLabels[key],
       };
       const parentLabels = parentLabelArray[parentIndexMap[key]];
-      const combinedLabels = { ...relabelfn(ownLabels), parent: parentLabels };
+      const combinedLabels = relabelfn({ ...ownLabels, parent: parentLabels });
 
       result[key] = combinedLabels;
     }
