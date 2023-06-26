@@ -8,7 +8,7 @@ import { makePlotStore } from "../plot/makePlotStore";
 import { ScaleContinuous } from "../scales/ScaleContinuous";
 import { makeSceneStore } from "../scene/makeSceneStore";
 import { Tuple2, Tuple4 } from "../types";
-import { StackFn, stackRectVertical } from "../wranglers/stackers";
+import { StackFn, stackRectVertical } from "../wrangling/stackers";
 import { BarEncodings, RectEncodings } from "../encodingTypes";
 import { ScaleDiscrete } from "../scales/ScaleDiscrete";
 

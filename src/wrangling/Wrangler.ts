@@ -30,7 +30,7 @@ export class Wrangler {
     this.nothing = Symbol();
   }
 
-  partitionLabels = () => last(this.partitions).upperLabelSet();
+  partitionLabels = () => last(this.partitions).upperLabelArrays();
 
   bind = (key: string, bindfn: (values?: any) => any) => {
     if (bindfn.length < 1) {
@@ -77,7 +77,7 @@ export class Wrangler {
   ) => {
     this.limits[limitKey] = () =>
       this.partitions[depth]
-        .upperLabelSet()
+        .upperLabelArrays()
         [depth].reduce((a, b) => reducefn(a, b[varKey]), initialValue);
     return this;
   };

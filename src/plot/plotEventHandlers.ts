@@ -45,6 +45,8 @@ export const onMouseMove = (plot: Plot) => (event: MouseEvent) => {
   const { height, marginBottom, marginLeft } = plot.store;
   const { setMouseX, setMouseY } = plot.store;
 
+  plot.marker.clearTransient();
+
   const [x, y] = [
     event.offsetX - marginLeft(),
     height() - event.offsetY - marginBottom(),

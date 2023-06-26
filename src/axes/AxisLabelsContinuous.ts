@@ -1,5 +1,6 @@
 import { clear, text } from "../drawfuns";
 import { prettyBreaks } from "../funs";
+import { graphicParameters } from "../graphicParameters";
 import { makeCanvasContext } from "../makeCanvasContext";
 import { Plot } from "../plot/Plot";
 import { ScaleContinuous } from "../scales/ScaleContinuous";
@@ -28,8 +29,8 @@ export class AxisLabelsContinuous {
 
     const { height, innerBottom, innerLeft } = store;
 
-    const yBase = height() - innerBottom() + 3;
-    const xBase = innerLeft() - 3;
+    const yBase = height() - innerBottom() + graphicParameters.axisOffset;
+    const xBase = innerLeft() - graphicParameters.axisOffset;
 
     clear(context);
 
@@ -41,9 +42,11 @@ export class AxisLabelsContinuous {
         const label = breaks[i].toString();
         const x = scale.pushforward(breaks[i]);
 
-        text(context, label, x, yBase);
+        text(context, label, x, yBase, {
+          fontsize: graphicParameters.fontsize,
+        });
       }
-    } else {
+    } else if (along === "y") {
       context.textBaseline = "middle";
       context.textAlign = "right";
 
@@ -51,7 +54,9 @@ export class AxisLabelsContinuous {
         const label = breaks[i].toString();
         const y = scale.pushforward(breaks[i]);
 
-        text(context, label, xBase, height() - y);
+        text(context, label, xBase, height() - y, {
+          fontsize: graphicParameters.fontsize,
+        });
       }
     }
   };

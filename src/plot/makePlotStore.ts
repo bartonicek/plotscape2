@@ -3,18 +3,16 @@ import { just, toInt } from "../funs";
 import { graphicParameters } from "../graphicParameters";
 import { Plot } from "./Plot";
 
-export const makePlotStore = (plot: Plot) => {
-  const { container } = plot;
-
+export const makePlotStore = (container: HTMLDivElement) => {
   const [active, setActive] = createSignal(false);
   const activate = () => {
     setActive(true);
-    plot.container.classList.add("active");
+    container.classList.add("active");
   };
 
   const deactivate = () => {
     setActive(false);
-    plot.container.classList.remove("active");
+    container.classList.remove("active");
   };
 
   const [width, setWidth] = createSignal(

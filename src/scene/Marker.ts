@@ -1,7 +1,15 @@
 import { Accessor, untrack } from "solid-js";
-import { Factor } from "../wranglers/Factor";
+import { Factor } from "../wrangling/Factor";
 
-export const GROUPS = {};
+export const GROUPS = {
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+};
+
+const addTransient = (x: number) => x | 128;
+const removeTransient = (x: number) => x & ~128;
 
 export class Marker {
   n: number;
@@ -15,45 +23,40 @@ export class Marker {
   constructor(n: number, cases: Accessor<number[]>, group: Accessor<number>) {
     this.n = n;
 
-    this.indices = Array<number>(n).fill(1);
+    this.indices = Array<number>(n).fill(removeTransient(GROUPS[1]));
     this.indexSet = new Set([0, 1, 2, 3, 4]);
     this.labels = {
-      // 0: { group: 0, persistent: false, cases: [] },
-      1: { group: 1, persisent: true, cases: [] },
-      2: { group: 2, persistent: false, cases: [] },
-      3: { group: 3, persisent: true, cases: [] },
-      4: { group: 4, persisent: true, cases: [] },
-      129: { group: 2, persistent: false, cases: [] },
-      130: { group: 2, persistent: true, cases: [] },
-      131: { group: 3, persistent: true, cases: [] },
-      132: { group: 4, persistent: true, cases: [] },
+      129: { group: 1, transient: true, cases: [] },
+      130: { group: 2, transient: true, cases: [] },
+      131: { group: 3, transient: true, cases: [] },
+      132: { group: 4, transient: true, cases: [] },
+      1: { group: 1, transient: false, cases: [] },
+      2: { group: 2, transient: false, cases: [] },
+      3: { group: 3, transient: false, cases: [] },
+      4: { group: 4, transient: false, cases: [] },
     };
 
     this.cases = cases;
     this.group = group;
   }
 
+  clearAll = () => this.indices.fill(removeTransient(GROUPS[1]));
   clearTransient = () => {
-    for (let i = 0; i < this.indices.length; i++) {
-      this.indices[i] = this.indices[i] & ~128;
-    }
-  };
-
-  clearAll = () => {
-    this.indices.fill(1);
+    const { indices } = this;
+    for (let i = 0; i < indices.length; i++)
+      indices[i] = removeTransient(indices[i]);
   };
 
   factor = () => {
     const { indices, indexSet, labels } = this;
     const [cases, group] = [this.cases(), untrack(this.group)];
+    const n = cases.length;
 
     if (group === 128) {
-      for (let i = 0; i < cases.length; i++) {
-        indices[cases[i]] = indices[cases[i]] | 128;
+      for (let i = 0; i < n; i++) {
+        indices[cases[i]] = addTransient(indices[cases[i]]);
       }
-    } else {
-      for (let i = 0; i < cases.length; i++) indices[cases[i]] = group;
-    }
+    } else for (let i = 0; i < n; i++) indices[cases[i]] = group;
 
     return new Factor(indices, indexSet, labels);
   };

@@ -1,19 +1,26 @@
-import { createEffect } from "solid-js";
 import { AxisLabelsContinuous } from "../../axes/AxisLabelsContinuous";
-import { clear } from "../../drawfuns";
+import { just } from "../../funs";
 import { Plot } from "../../plot/Plot";
 import { Rectangles } from "../../representations.ts/Rectangles";
 import { Scene } from "../../scene/Scene";
+import {
+  stackRectHorizontal,
+  stackRectVertical,
+} from "../../wrangling/stackers";
 import { buildHisto } from "../wranglerWrappers/HistoWrangler";
-import { SpineRectangles } from "../../representations.ts/SpineRectangles";
-import { just } from "../../funs";
 
 export class SpinePlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
     super(scene, mapping);
 
-    this.wrangler = buildHisto(this)
+    const { data, marker, defaults } = this;
+
+    this.wrangler = buildHisto(mapping, data, marker, defaults);
+    this.encoder
+      .registerPartitions(this.wrangler.partitions)
       .relabelAt(2, (label) => ({
+        x0: label.parent.x0,
+        x1: label.parent.x1,
         y0: label.empty,
         y1: label.summary / label.parent.y1,
       }))
@@ -23,9 +30,15 @@ export class SpinePlot extends Plot {
         y0: label.empty,
         y1: label.summary,
       }))
-      .trackLimit("xMax", "y1", 0, Math.max, 0);
+      .relabelAt(0, (label) => ({ x1: label.summary }))
+      .trackLimit("xMin", "x0", 1, Math.min, Infinity)
+      .trackLimit("xMax", "x1", 0, Math.max, 0)
+      .trackLimit("yMin", "y0", 1, Math.min, 0)
+      .trackLimit("yMax", "y1", 1, Math.max, -Infinity);
 
-    const { limits } = this.wrangler;
+    const { limits } = this.encoder;
+
+    console.log(limits.yMax());
 
     for (const scale of Object.values(this.scales)) {
       scale.data.x.setDomain!(limits.xMin, limits.xMax);
@@ -42,7 +55,11 @@ export class SpinePlot extends Plot {
     const xAxis = new AxisLabelsContinuous(this, "x");
     const yAxis = new AxisLabelsContinuous(this, "y");
 
-    this.addRepresentation(new SpineRectangles(this));
+    const rects = new Rectangles(this)
+      .stack(2, stackRectVertical, 0)
+      .stack(1, stackRectHorizontal, 0);
+
+    this.addRepresentation(rects);
     this.addAuxilary(xAxis);
     this.addAuxilary(yAxis);
   }

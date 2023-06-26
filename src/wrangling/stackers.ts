@@ -1,3 +1,5 @@
+import { StackFn } from "../types";
+
 export const stackPartitions = <T>(
   partitions: Record<string, any>[][],
   depth: number,
@@ -8,7 +10,7 @@ export const stackPartitions = <T>(
   const parents = new Set<Record<string | symbol, any>>();
 
   for (const part of partitions[depth]) {
-    const parent = part.parent;
+    const parent = part.parent ?? {};
     parents.add(parent);
     if (!(temp in parent)) parent[temp] = initialValue;
     parent[temp] = stackfn(part, parent[temp]);
@@ -18,10 +20,19 @@ export const stackPartitions = <T>(
 };
 
 export const stackRectVertical = (
-  node: Record<string, any>,
+  part: Record<string, any>,
   stacked: number
 ) => {
-  node.y0 = stacked;
-  node.y1 = stacked + node.y1;
-  return node.y1;
+  part.y0 = stacked + part.y0;
+  part.y1 = stacked + part.y1;
+  return part.y1;
+};
+
+export const stackRectHorizontal: StackFn<number> = (
+  part: Record<string, any>,
+  stacked: number
+) => {
+  part.x0 = stacked;
+  part.x1 = stacked + part.x1;
+  return part.x1;
 };

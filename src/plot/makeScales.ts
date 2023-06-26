@@ -1,12 +1,12 @@
+import { Accessor } from "solid-js";
 import { just } from "../funs";
 import { ScaleContinuous } from "../scales/ScaleContinuous";
 import { ScaleData } from "../scales/ScaleData";
 import { ScaleIdentity } from "../scales/ScaleIdentity";
 import { Plot } from "./Plot";
+import { makePlotStore } from "./makePlotStore";
 
-export const makeScales = (plot: Plot) => {
-  const store = plot.store;
-
+export const makeScales = (store: ReturnType<typeof makePlotStore>) => {
   const inner = {
     abs: {
       x: new ScaleIdentity(),

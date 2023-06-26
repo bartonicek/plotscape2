@@ -41,13 +41,13 @@ export class Partition {
     return childPartition;
   };
 
-  upperLabels = (): Record<string, any>[][] => {
+  upperLabelsRecursive = (): Record<string, any>[][] => {
     const [factorLabels, computedLabels] = [
       this.factorLabels(),
       this.computedLabels(),
     ];
 
-    const { statics, parent, child, relabelfn } = this;
+    const { statics, parent, relabelfn } = this;
     const keys = Object.keys(computedLabels).map(toInt);
     const result = {} as Record<string, any>[];
 
@@ -64,7 +64,7 @@ export class Partition {
       return [result];
     }
 
-    const ancestorLabels = parent.upperLabels();
+    const ancestorLabels = parent.upperLabelsRecursive();
     const parentIndexMap = this.parentIndexMap()!;
     const parentLabelArray = ancestorLabels[ancestorLabels.length - 1]!;
 
@@ -76,20 +76,18 @@ export class Partition {
       };
       const parentLabels = parentLabelArray[parentIndexMap[key]];
       const combinedLabels = relabelfn({ ...ownLabels, parent: parentLabels });
-
       result[key] = combinedLabels;
     }
 
     ancestorLabels.push(result);
-
     return ancestorLabels;
   };
 
-  upperLabelSet = () => this.upperLabels().map(Object.values);
+  upperLabelArrays = () => this.upperLabelsRecursive().map(Object.values);
 
   parentIndexMap = () => {
     if (!this.parent) return;
-    const [factor, parentFactor] = [this.factor(), this.parent?.factor()];
+    const [factor, parentFactor] = [this.factor(), this.parent.factor()];
     const result = {} as Record<number, number>;
     for (let i = 0; i < factor.indices.length; i++) {
       if (!(factor.indices[i] in result)) {

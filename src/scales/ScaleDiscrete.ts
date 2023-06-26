@@ -16,10 +16,10 @@ export class ScaleDiscrete implements Scale {
     this.codomain = [just(0), just(1)];
     this.expand = [just(0), just(1)];
     this.values = () => [];
-    this.positions = () => {
+    this.positions = createMemo(() => {
       const length = this.values().length;
       return Array.from(Array(length), (_, i) => (i + 1) / (length + 1));
-    };
+    });
   }
 
   setValues = (values: Accessor<string[]>) => {

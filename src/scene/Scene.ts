@@ -1,6 +1,6 @@
 import { createEffect } from "solid-js";
 import { Dataframe, SceneStore } from "../types";
-import { Marker } from "./Marker";
+import { GROUPS, Marker } from "./Marker";
 import { Plot } from "../plot/Plot";
 import {
   onDoubleClick,
@@ -33,9 +33,8 @@ export class Scene {
     this.marker = new Marker(n, selectedCases, group);
 
     this.keyActions = {
-      Digit1: () => this.store.setGroup(3),
-      Digit2: () => this.store.setGroup(4),
-      Digit3: () => this.store.setGroup(5),
+      Digit1: () => this.store.setGroup(GROUPS[3]),
+      Digit2: () => this.store.setGroup(GROUPS[4]),
     };
 
     createEffect(() => {

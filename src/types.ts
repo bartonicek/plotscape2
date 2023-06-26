@@ -15,6 +15,7 @@ export type CompareFn<T> = (x: T, y: T) => boolean;
 
 export type Label = Record<string, any>[];
 export type RelabelFn = (x: Record<string, any>) => Record<string, any>;
+export type StackFn<T> = (label: Record<string, any>, stacked: T) => T;
 
 export type PlotStore = ReturnType<typeof makePlotStore>;
 export type SceneStore = ReturnType<typeof makeSceneStore>;

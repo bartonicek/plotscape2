@@ -1,11 +1,4 @@
-import {
-  appendToKeys,
-  diff,
-  disjointUnion,
-  mapObject,
-  prependToKeys,
-  sum,
-} from "../funs";
+import { diff, disjointUnion } from "../funs";
 
 export class Factor {
   singleton: boolean;

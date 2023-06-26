@@ -8,7 +8,7 @@ import { Rectangles } from "../representations.ts/Rectangles";
 import { Marker } from "../scene/Marker";
 import { Scene } from "../scene/Scene";
 import { Dataframe, PlotScales, PlotStore, Tuple4 } from "../types";
-import { Wrangler } from "../wranglers/Wrangler";
+import { Wrangler } from "../wrangling/Wrangler";
 import { makePlotStore } from "./makePlotStore";
 import { makeScales } from "./makeScales";
 import {
@@ -18,6 +18,9 @@ import {
   onMouseup,
   onResize,
 } from "./plotEventHandlers";
+import { Representation } from "../representations.ts/Representation";
+import { makeDefaultSummaries } from "./makeDefaultSummaries";
+import { Encoder } from "../wrangling/Encoder";
 
 export class Plot {
   data: Dataframe;
@@ -26,11 +29,13 @@ export class Plot {
 
   container: HTMLDivElement;
   mapping: Record<string, string>;
+  defaults: Record<keyof typeof this.mapping, Record<string, number>>;
   scales: PlotScales;
 
   wrangler: Wrangler;
+  encoder: Encoder;
   marker: Marker;
-  representations: Rectangles[];
+  representations: Representation[];
   auxilaries: AxisLabelsContinuous[];
 
   keyActions: Record<string, () => void>;
@@ -43,10 +48,12 @@ export class Plot {
     this.container = html`<div class="plotscape-container" />`;
     scene.app.appendChild(this.container);
 
-    this.store = makePlotStore(this);
-    this.scales = makeScales(this);
+    this.store = makePlotStore(this.container);
+    this.scales = makeScales(this.store);
+    this.defaults = makeDefaultSummaries(mapping, scene.data);
 
     this.wrangler = new Wrangler();
+    this.encoder = new Encoder();
     this.marker = scene.marker;
     this.representations = [];
     this.auxilaries = [];
@@ -85,7 +92,7 @@ export class Plot {
     createEffect(auxilary.draw);
   };
 
-  addRepresentation = (representation: Rectangles) => {
+  addRepresentation = (representation: Representation) => {
     this.representations.push(representation);
     createEffect(representation.draw);
 
@@ -97,7 +104,7 @@ export class Plot {
 
     createEffect(
       on(selection, (selection) => {
-        setSelectedCases(representation.getSelectedCases(selection));
+        setSelectedCases(representation.checkSelection(selection));
       })
     );
   };

@@ -11,17 +11,24 @@ export class BarPlot extends Plot {
     super(scene, mapping);
 
     this.wrangler = buildBar(this);
-    const { limits } = this.wrangler;
 
-    console.log(this.wrangler.encodings());
+    console.log(this.wrangler.partitionLabels());
 
-    for (const layer of Object.values(this.layers)) {
-      layer.scales.data.x.setValues!(() => ["A", "B", "C"]);
-      layer.scales.data.y.setDomain!(limits.yMin, limits.yMax);
-    }
+    this.encoder
+      .registerPartitions(this.wrangler.partitions)
+      .relabelAll((label) => ({
+        x: label.label,
+        y0: label.empty,
+        y1: label.summary,
+      }));
 
-    const xAxis = new AxisLabelsContinuous(this, "x");
-    const yAxis = new AxisLabelsContinuous(this, "y");
+    // for (const layer of Object.values(this.layers)) {
+    //   layer.scales.data.x.setValues!(() => ["A", "B", "C"]);
+    //   layer.scales.data.y.setDomain!(limits.yMin, limits.yMax);
+    // }
+
+    // const xAxis = new AxisLabelsContinuous(this, "x");
+    // const yAxis = new AxisLabelsContinuous(this, "y");
 
     // createEffect(() => {
     //   clear(this.layers.over.context);

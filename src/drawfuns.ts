@@ -3,7 +3,8 @@ export function clear(context: CanvasRenderingContext2D) {
   context.clearRect(0, 0, width, height);
 }
 
-type RectangleOptions = { color: string; alpha: number };
+type RectangleOptions = { color: string; alpha: number; stroke: string };
+
 export function rectangle(
   context: CanvasRenderingContext2D,
   x0: number,
@@ -20,17 +21,27 @@ export function rectangle(
   context.fillStyle = opts.color;
   context.globalAlpha = opts.alpha;
   context.fillRect(x0, height - y0, w, -h);
+  if (options?.stroke) {
+    context.strokeStyle = options.stroke;
+    context.strokeRect(x0, height - y0, w, -h);
+  }
   context.restore();
 }
+
+type TextOptions = { fontsize: number; fontfamily: string };
 
 export function text(
   context: CanvasRenderingContext2D,
   label: string,
   x: number,
-  y: number
+  y: number,
+  options?: Partial<TextOptions>
 ) {
   context.save();
   context.translate(x, y);
+  context.font = `${options?.fontsize ?? `10`}px ${
+    options?.fontfamily ?? `Arial`
+  }`;
   context.fillText(label, 0, 0);
   context.translate(-x, -y);
   context.restore();

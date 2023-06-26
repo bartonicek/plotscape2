@@ -1,12 +1,15 @@
 import { RelabelFn, Tuple2 } from "./types";
 
-export const identity = (x: any) => x;
-export const just = (x: any) => () => x;
-export const argSecond = (x: any, y: any) => y;
+export const identity = <T>(x: T) => x;
+export const just =
+  <T>(x: T) =>
+  () =>
+    x;
+export const argSecond = <T>(x: never, y: T) => y;
 export const call = (fn: Function) => fn();
 export const callWith =
-  <T>(x: T) =>
-  (fn: (x: T) => any) =>
+  <T, U>(x: T) =>
+  (fn: (x: T) => U) =>
     fn(x);
 
 export const pick = <T extends Record<string, any>, K extends keyof T>(
@@ -18,7 +21,8 @@ export const pick = <T extends Record<string, any>, K extends keyof T>(
   return result;
 };
 
-export const last = (x: any[]) => x[x.length - 1];
+export const last = <T>(x: T[]) => x[x.length - 1];
+export const push = <T>(x: T[], y: T) => x.push(y);
 
 export const sum = (x: number, y: number) => x + y;
 export const diff = (x: number, y: number) => x - y;

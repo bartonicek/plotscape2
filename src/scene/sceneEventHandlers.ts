@@ -9,8 +9,12 @@ export const onDoubleClick = (scene: Scene) => () => {
 
 export const onMousedown = (scene: Scene) => (event: MouseEvent) => {
   const target = event.target;
-  if (target instanceof Element && target.classList.value === "plotscape-scene")
+  if (
+    target instanceof Element &&
+    target.classList.value === "plotscape-scene"
+  ) {
     scene.plots.forEach((plot) => plot.store.deactivate());
+  }
 };
 
 export const onKeyDown = (scene: Scene) => (event: KeyboardEvent) => {
