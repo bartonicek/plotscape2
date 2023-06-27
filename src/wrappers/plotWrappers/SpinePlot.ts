@@ -7,7 +7,7 @@ import {
   stackRectHorizontal,
   stackRectVertical,
 } from "../../wrangling/stackers";
-import { buildHisto } from "../wranglerWrappers/HistoWrangler";
+import { bin1DCounts } from "../wranglerWrappers/bin1DCounts";
 
 export class SpinePlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
@@ -15,7 +15,7 @@ export class SpinePlot extends Plot {
 
     const { data, marker, defaults } = this;
 
-    this.wrangler = buildHisto(mapping, data, marker, defaults);
+    this.wrangler = bin1DCounts(mapping, data, marker, defaults);
     this.encoder
       .registerPartitions(this.wrangler.partitions)
       .relabelAt(2, (label) => ({
@@ -37,8 +37,6 @@ export class SpinePlot extends Plot {
       .trackLimit("yMax", "y1", 1, Math.max, -Infinity);
 
     const { limits } = this.encoder;
-
-    console.log(limits.yMax());
 
     for (const scale of Object.values(this.scales)) {
       scale.data.x.setDomain!(limits.xMin, limits.xMax);

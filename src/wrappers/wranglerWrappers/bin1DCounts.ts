@@ -5,7 +5,7 @@ import { Factor } from "../../wrangling/Factor";
 import { Wrangler } from "../../wrangling/Wrangler";
 import { countReducer } from "../../wrangling/reducers";
 
-export const buildHisto = (
+export const bin1DCounts = (
   mapping: Record<string, string>,
   data: Record<string, any[]>,
   marker: Marker,

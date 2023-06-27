@@ -1,4 +1,4 @@
-import { diff, disjointUnion } from "../funs";
+import { combineIndices, diff, disjointUnion } from "../funs";
 
 export class Factor {
   singleton: boolean;
@@ -18,9 +18,6 @@ export class Factor {
     this.labels = labels;
     this.singleton = singleton;
   }
-
-  toString = () =>
-    `Factor {n : ${this.indices.length}, k: ${this.indexSet.size}}`;
 
   static singleton = () => new Factor([], new Set([0]), { 0: {} }, true);
 
@@ -97,7 +94,7 @@ export class Factor {
       const factorIndices = factors.map((x) => x.indices[i]);
 
       // Combined index determines order, first factor has biggest weight,...
-      const combinedIndex = parseInt(factorIndices.join(""), 10);
+      const combinedIndex = combineIndices(...factorIndices);
 
       if (!indexSet.has(combinedIndex)) {
         labels[combinedIndex] = factors.reduce((result, nextFactor, k) => {

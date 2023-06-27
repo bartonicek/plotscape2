@@ -2,14 +2,14 @@ import { Accessor, untrack } from "solid-js";
 import { Factor } from "../wrangling/Factor";
 
 export const GROUPS = {
-  1: 1,
-  2: 2,
-  3: 3,
-  4: 4,
+  1: 4,
+  2: 3,
+  3: 2,
+  4: 1,
 };
 
-const addTransient = (x: number) => x | 128;
-const removeTransient = (x: number) => x & ~128;
+const addTransient = (x: number) => x & ~128;
+const removeTransient = (x: number) => x | 128;
 
 export class Marker {
   n: number;
@@ -26,14 +26,14 @@ export class Marker {
     this.indices = Array<number>(n).fill(removeTransient(GROUPS[1]));
     this.indexSet = new Set([0, 1, 2, 3, 4]);
     this.labels = {
-      129: { group: 1, transient: true, cases: [] },
-      130: { group: 2, transient: true, cases: [] },
-      131: { group: 3, transient: true, cases: [] },
-      132: { group: 4, transient: true, cases: [] },
-      1: { group: 1, transient: false, cases: [] },
-      2: { group: 2, transient: false, cases: [] },
-      3: { group: 3, transient: false, cases: [] },
-      4: { group: 4, transient: false, cases: [] },
+      1: { group: GROUPS[1], transient: true, cases: [] },
+      2: { group: GROUPS[2], transient: true, cases: [] },
+      3: { group: GROUPS[3], transient: true, cases: [] },
+      4: { group: GROUPS[4], transient: true, cases: [] },
+      129: { group: GROUPS[1], transient: false, cases: [] },
+      130: { group: GROUPS[2], transient: false, cases: [] },
+      131: { group: GROUPS[3], transient: false, cases: [] },
+      132: { group: GROUPS[4], transient: false, cases: [] },
     };
 
     this.cases = cases;
@@ -43,8 +43,9 @@ export class Marker {
   clearAll = () => this.indices.fill(removeTransient(GROUPS[1]));
   clearTransient = () => {
     const { indices } = this;
-    for (let i = 0; i < indices.length; i++)
+    for (let i = 0; i < indices.length; i++) {
       indices[i] = removeTransient(indices[i]);
+    }
   };
 
   factor = () => {

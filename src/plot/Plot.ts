@@ -38,6 +38,8 @@ export class Plot {
   representations: Representation[];
   auxilaries: AxisLabelsContinuous[];
 
+  user: CanvasRenderingContext2D;
+
   keyActions: Record<string, () => void>;
 
   constructor(scene: Scene, mapping: Record<string, string>) {
@@ -68,14 +70,13 @@ export class Plot {
       window.addEventListener("keydown", throttle(onKeyDown(this), 50));
     });
 
-    const under = makeCanvasContext(this, { inner: false, name: "under" });
-    const user = makeCanvasContext(this, { inner: true, name: "user" });
+    this.user = makeCanvasContext(this, { inner: true, name: "user" });
 
     createEffect(() => {
       const { clickX, clickY, mouseX, mouseY } = this.store;
       const [x0, x1, y0, y1] = [clickX, mouseX, clickY, mouseY].map(call);
-      clear(user);
-      rectangle(user, x0, x1, y0, y1, { alpha: 0.25 });
+      clear(this.user);
+      rectangle(this.user, x0, x1, y0, y1, { alpha: 0.25 });
     });
 
     this.keyActions = {};

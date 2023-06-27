@@ -13,6 +13,6 @@ createRoot(() => {
   const scene1 = new Scene(app, dataMpg);
   const plot1 = new HistoPlot(scene1, { v1: "hwy" });
   const plot2 = new SpinePlot(scene1, { v1: "displ" });
-  const plot3 = new BarPlot(scene1, { v1: "cyl" });
+  // const plot3 = new BarPlot(scene1, { v1: "cyl" });
   scene1.setRowsCols(2, 1);
 });

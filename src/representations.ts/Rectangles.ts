@@ -64,15 +64,15 @@ export class Rectangles implements Representation {
       const [x0s, x1s] = [x0, x1].map(scaleX);
       const [y0s, y1s] = [y0, y1].map(scaleY);
 
+      const transientOpts = {
+        alpha: 0.25,
+        color: `#E41A1C`,
+        stroke: "#000000",
+      };
+
       const color = graphicParameters.groupColours[group - 1];
       draw.rectangle(context, x0s, x1s, y0s, y1s, { alpha: 1, color });
-      if (transient) {
-        draw.rectangle(context, x0s, x1s, y0s, y1s, {
-          alpha: 0.25,
-          color: `#E41A1C`,
-          stroke: "#000000",
-        });
-      }
+      if (transient) draw.rectangle(context, x0s, x1s, y0s, y1s, transientOpts);
     }
   };
 

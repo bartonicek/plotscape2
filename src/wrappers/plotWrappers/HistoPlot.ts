@@ -3,7 +3,7 @@ import { Plot } from "../../plot/Plot";
 import { Rectangles } from "../../representations.ts/Rectangles";
 import { Scene } from "../../scene/Scene";
 import { stackRectVertical } from "../../wrangling/stackers";
-import { buildHisto } from "../wranglerWrappers/HistoWrangler";
+import { bin1DCounts } from "../wranglerWrappers/bin1DCounts";
 
 export class HistoPlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
@@ -11,7 +11,7 @@ export class HistoPlot extends Plot {
 
     const { data, marker, defaults } = this;
 
-    this.wrangler = buildHisto(mapping, data, marker, defaults);
+    this.wrangler = bin1DCounts(mapping, data, marker, defaults);
     this.encoder
       .registerPartitions(this.wrangler.partitions)
       .relabelAll(({ binMin, binMax, empty, summary }) => ({

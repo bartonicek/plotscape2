@@ -4,7 +4,7 @@ import { Factor } from "../../wrangling/Factor";
 import { Wrangler } from "../../wrangling/Wrangler";
 import { countReducer } from "../../wrangling/reducers";
 
-export function buildBar(plot: Plot) {
+export function cat1DCounts(plot: Plot) {
   return new Wrangler()
     .bindMarker(plot.marker)
     .bindData(plot.mapping, plot.scene.data)

@@ -80,6 +80,12 @@ export const capitalize = (string: string) =>
 
 export const intToChar = (int: number) => String.fromCharCode(int + 97);
 
+export const combineIndices = (...indices: number[]) => {
+  let result = "";
+  for (const index of indices) result += "0" + index;
+  return parseInt(result, 10);
+};
+
 export const throttle = (fun: Function, delay: number) => {
   let lastTime = 0;
   return (...args: any[]) => {
