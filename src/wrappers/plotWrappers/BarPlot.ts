@@ -4,15 +4,13 @@ import { clear } from "../../drawfuns";
 import { Plot } from "../../plot/Plot";
 import { Bars } from "../../representations.ts/Bars";
 import { Scene } from "../../scene/Scene";
-import { buildBar } from "../wranglerWrappers/BarWrangler";
+import { cat1DCounts } from "../wranglerWrappers/cat1DCounts";
 
 export class BarPlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
     super(scene, mapping);
 
-    this.wrangler = buildBar(this);
-
-    console.log(this.wrangler.partitionLabels());
+    this.wrangler = cat1DCounts(this);
 
     this.encoder
       .registerPartitions(this.wrangler.partitions)
