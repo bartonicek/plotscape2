@@ -1,3 +1,4 @@
+import { createMemo, untrack } from "solid-js";
 import * as draw from "../drawfuns";
 import { RectEncodings } from "../encodingTypes";
 import { rectOverlap } from "../funs";
@@ -44,30 +45,33 @@ export class Rectangles implements Representation {
   draw = () => {
     const { scales, context, stackfns, encoder } = this;
     const [scaleX, scaleY] = [scales.x.pushforward, scales.y.pushforward];
-    const partitions = encoder.partitionsAbove(2);
+    const parts1 = encoder.partsAt(1);
+    const parts2 = encoder.partsAt(2);
 
     draw.clear(context);
 
-    if (stackfns[1]) {
-      const { stackfn, initialValue } = stackfns[1];
-      stackPartitions(partitions, 1, stackfn, initialValue);
-    }
-    if (stackfns[2]) {
-      const { stackfn, initialValue } = stackfns[2];
-      stackPartitions(partitions, 2, stackfn, initialValue);
+    if (stackfns[0] && !encoder.stacked[0]) {
+      const { stackfn, initialValue } = stackfns[0];
+      stackPartitions(parts2, stackfn, initialValue);
+      encoder.stacked[0] = true;
     }
 
-    for (let i = 0; i < partitions[2].length; i++) {
-      const { x0, x1 } = partitions[2][i].parent;
-      const { y0, y1, group, transient } = partitions[2][i];
+    if (stackfns[1] && !encoder.stacked[1]) {
+      const { stackfn, initialValue } = stackfns[1];
+      stackPartitions(parts1, stackfn, initialValue);
+      encoder.stacked[1] = true;
+    }
+
+    for (const part of parts2) {
+      const { x0, x1 } = part.parent;
+      const { y0, y1, group, transient } = part;
 
       const [x0s, x1s] = [x0, x1].map(scaleX);
       const [y0s, y1s] = [y0, y1].map(scaleY);
 
       const transientOpts = {
-        alpha: 0.25,
-        color: `#E41A1C`,
-        stroke: "#000000",
+        alpha: 0.75,
+        color: graphicParameters.groupColours[1],
       };
 
       const color = graphicParameters.groupColours[group - 1];
@@ -78,19 +82,19 @@ export class Rectangles implements Representation {
 
   checkSelection = (coords: Tuple4<number>) => {
     const { stackfns, scales, encoder } = this;
-    const partitions = encoder.partitionsAbove(1);
+    const parts = encoder.partsAt(1);
 
     if (stackfns[1]) {
       const { stackfn, initialValue } = stackfns[1];
-      stackPartitions(partitions, 1, stackfn, initialValue);
+      stackPartitions(parts, stackfn, initialValue);
     }
 
     const selX = [coords[0], coords[2]] as Tuple2<number>;
     const selY = [coords[1], coords[3]] as Tuple2<number>;
     const selectedCases: number[] = [];
 
-    for (let i = 0; i < partitions[1].length; i++) {
-      const { x0, x1, y0, y1, cases } = partitions[1][i];
+    for (const part of parts) {
+      const { x0, x1, y0, y1, cases } = part;
       const objX = [x0, x1].map(scales.x.pushforward) as Tuple2<number>;
       const objY = [y0, y1].map(scales.y.pushforward) as Tuple2<number>;
       if (rectOverlap(objX, objY, selX, selY)) selectedCases.push(...cases);

@@ -30,8 +30,6 @@ export class Wrangler {
     this.nothing = Symbol();
   }
 
-  partitionLabels = () => last(this.partitions).upperLabelArrays();
-
   bind = (key: string, bindfn: (values?: any) => any) => {
     if (bindfn.length < 1) {
       const [getter, setter] = createSignal(bindfn());
@@ -64,42 +62,6 @@ export class Wrangler {
     for (const key of keys) {
       partition = partition.nest(this.get[key]);
       this.partitions.push(partition);
-    }
-    return this;
-  };
-
-  trackLimit = (
-    limitKey: string,
-    varKey: string,
-    depth: number,
-    reducefn: ReduceFn<number, number>,
-    initialValue: number
-  ) => {
-    this.limits[limitKey] = () =>
-      this.partitions[depth]
-        .upperLabelArrays()
-        [depth].reduce((a, b) => reducefn(a, b[varKey]), initialValue);
-    return this;
-  };
-
-  relabelAt = (depth: number, relabelfn: RelabelFn) => {
-    this.partitions[depth].relabelfn = (label) => ({
-      ...relabelfn(label),
-      group: label.group,
-      cases: label.cases,
-      parent: label.parent,
-    });
-    return this;
-  };
-
-  relabelAll = (relabelfn: RelabelFn) => {
-    for (const partition of this.partitions) {
-      partition.relabelfn = (label) => ({
-        ...relabelfn(label),
-        group: label.group,
-        cases: label.cases,
-        parent: label.parent,
-      });
     }
     return this;
   };

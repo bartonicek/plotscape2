@@ -54,7 +54,7 @@ export class SpinePlot extends Plot {
     const yAxis = new AxisLabelsContinuous(this, "y");
 
     const rects = new Rectangles(this)
-      .stack(2, stackRectVertical, 0)
+      .stack(0, stackRectVertical, 0)
       .stack(1, stackRectHorizontal, 0);
 
     this.addRepresentation(rects);

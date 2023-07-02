@@ -1,5 +1,5 @@
-import { Accessor } from "solid-js";
-import { identity, toInt } from "../funs";
+import { Accessor, createMemo } from "solid-js";
+import { identity, last, toInt } from "../funs";
 import { Reducer, RelabelFn } from "../types";
 import { Factor } from "./Factor";
 import { Wrangler } from "./Wrangler";
@@ -41,7 +41,7 @@ export class Partition {
     return childPartition;
   };
 
-  upperLabelsRecursive = (): Record<string, any>[][] => {
+  partsAboveRecursive = (): Record<string, any>[][] => {
     const [factorLabels, computedLabels] = [
       this.factorLabels(),
       this.computedLabels(),
@@ -64,9 +64,9 @@ export class Partition {
       return [result];
     }
 
-    const ancestorLabels = parent.upperLabelsRecursive();
+    const ancestorLabels = parent.partsAboveRecursive();
+    const parentLabels = last(ancestorLabels);
     const parentIndexMap = this.parentIndexMap()!;
-    const parentLabelArray = ancestorLabels[ancestorLabels.length - 1]!;
 
     for (let key of keys) {
       const ownLabels = {
@@ -74,16 +74,17 @@ export class Partition {
         ...factorLabels[key],
         ...computedLabels[key],
       };
-      const parentLabels = parentLabelArray[parentIndexMap[key]];
-      const combinedLabels = relabelfn({ ...ownLabels, parent: parentLabels });
+
+      const combinedLabels = relabelfn({
+        ...ownLabels,
+        parent: parentLabels[parentIndexMap[key]],
+      });
       result[key] = combinedLabels;
     }
 
     ancestorLabels.push(result);
     return ancestorLabels;
   };
-
-  upperLabelArrays = () => this.upperLabelsRecursive().map(Object.values);
 
   parentIndexMap = () => {
     if (!this.parent) return;
@@ -111,13 +112,16 @@ export class Partition {
       const key = keys[j];
 
       if (singleton) {
-        result[0][key] = array.reduce(reducefn);
+        result[0][key] = array.reduce(reducefn, initialValue());
         continue;
       }
 
       for (let i = 0; i < indices.length; i++) {
         const index = indices[i];
-        if (!result?.[index]?.[key]) result[index][key] = initialValue;
+
+        if (result?.[index]?.[key] === undefined) {
+          result[index][key] = initialValue();
+        }
         result[index][key] = reducefn(result[index][key], array?.[i]);
       }
     }

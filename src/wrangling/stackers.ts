@@ -1,22 +1,26 @@
 import { StackFn } from "../types";
 
 export const stackPartitions = <T>(
-  partitions: Record<string, any>[][],
-  depth: number,
+  partition: Record<string, any>[],
   stackfn: (node: Record<string, any>, stackedValue: T) => void,
-  initialValue: any
+  initialValue: T
 ) => {
   const temp = Symbol();
-  const parents = new Set<Record<string | symbol, any>>();
+  const seenParts = new Set<Record<string | symbol, any>>();
+  const seenParents = new Set<Record<string | symbol, any>>();
 
-  for (const part of partitions[depth]) {
+  for (const part of partition) {
     const parent = part.parent ?? {};
-    parents.add(parent);
+    if (seenParts.has(part)) continue;
+
+    seenParts.add(part);
+    seenParents.add(parent);
+
     if (!(temp in parent)) parent[temp] = initialValue;
     parent[temp] = stackfn(part, parent[temp]);
   }
 
-  for (const parent of parents) delete parent[temp];
+  for (const parent of seenParents) delete parent[temp];
 };
 
 export const stackRectVertical = (

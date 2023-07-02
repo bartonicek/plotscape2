@@ -8,6 +8,17 @@ export const GROUPS = {
   4: 1,
 };
 
+const LABELS = {
+  1: { group: GROUPS[1], transient: true, cases: [] },
+  2: { group: GROUPS[2], transient: true, cases: [] },
+  3: { group: GROUPS[3], transient: true, cases: [] },
+  4: { group: GROUPS[4], transient: true, cases: [] },
+  129: { group: GROUPS[1], transient: false, cases: [] },
+  130: { group: GROUPS[2], transient: false, cases: [] },
+  131: { group: GROUPS[3], transient: false, cases: [] },
+  132: { group: GROUPS[4], transient: false, cases: [] },
+};
+
 const addTransient = (x: number) => x & ~128;
 const removeTransient = (x: number) => x | 128;
 
@@ -24,18 +35,8 @@ export class Marker {
     this.n = n;
 
     this.indices = Array<number>(n).fill(removeTransient(GROUPS[1]));
-    this.indexSet = new Set([0, 1, 2, 3, 4]);
-    this.labels = {
-      1: { group: GROUPS[1], transient: true, cases: [] },
-      2: { group: GROUPS[2], transient: true, cases: [] },
-      3: { group: GROUPS[3], transient: true, cases: [] },
-      4: { group: GROUPS[4], transient: true, cases: [] },
-      129: { group: GROUPS[1], transient: false, cases: [] },
-      130: { group: GROUPS[2], transient: false, cases: [] },
-      131: { group: GROUPS[3], transient: false, cases: [] },
-      132: { group: GROUPS[4], transient: false, cases: [] },
-    };
-
+    this.indexSet = new Set([0, 1, 2, 3, 4, 129, 130, 131, 132]);
+    this.labels = LABELS;
     this.cases = cases;
     this.group = group;
   }

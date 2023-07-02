@@ -10,7 +10,10 @@ export class BarPlot extends Plot {
   constructor(scene: Scene, mapping: { v1: string }) {
     super(scene, mapping);
 
-    this.wrangler = cat1DCounts(this);
+    const { marker, defaults } = this;
+    const { data } = this.scene;
+
+    this.wrangler = cat1DCounts(mapping, data, marker, defaults);
 
     this.encoder
       .registerPartitions(this.wrangler.partitions)

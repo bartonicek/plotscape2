@@ -42,7 +42,7 @@ export class HistoPlot extends Plot {
     const xAxis = new AxisLabelsContinuous(this, "x");
     const yAxis = new AxisLabelsContinuous(this, "y");
 
-    const rects = new Rectangles(this).stack(2, stackRectVertical, 0);
+    const rects = new Rectangles(this).stack(0, stackRectVertical, 0);
 
     this.addRepresentation(rects);
     this.addAuxilary(xAxis);

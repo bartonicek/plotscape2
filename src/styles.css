@@ -52,14 +52,14 @@ canvas {
   border-top: 2px solid #FEFFFE;
 }
 
-.plotscape-highlight {
-  z-index: 3;
-}
-
 .plotscape-user {
-  z-index: 4;
+  z-index: 3;
   border-left: 2px solid #3D3D3D;
   border-bottom: 2px solid #3D3D3D;
+}
+
+.plotscape-highlight {
+  z-index: 4;
 }
 
 .plotscape-over {

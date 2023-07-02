@@ -82,7 +82,7 @@ export const intToChar = (int: number) => String.fromCharCode(int + 97);
 
 export const combineIndices = (...indices: number[]) => {
   let result = "";
-  for (const index of indices) result += "0" + index;
+  while (indices.length) result += "0" + indices.pop();
   return parseInt(result, 10);
 };
 
