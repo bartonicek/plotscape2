@@ -1,6 +1,14 @@
 import { Accessor, untrack } from "solid-js";
 import { Factor } from "../wrangling/Factor";
 
+const NGROUPS = 3;
+const addTransient = (x: number) => x & ~128;
+const removeTransient = (x: number) => x | 128;
+
+export const group = (n: number) => {
+  return NGROUPS - n;
+};
+
 export const GROUPS = {
   1: 4,
   2: 3,
@@ -18,9 +26,6 @@ const LABELS = {
   131: { group: GROUPS[3], transient: false, cases: [] },
   132: { group: GROUPS[4], transient: false, cases: [] },
 };
-
-const addTransient = (x: number) => x & ~128;
-const removeTransient = (x: number) => x | 128;
 
 export class Marker {
   n: number;
